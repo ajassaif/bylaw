@@ -1,0 +1,14 @@
+# Benchmark: 197 held-out cases, pack `bc0fbcc69588`
+
+| system | accuracy (95% CI) | false proceed | macro-F1 | ECE | p50 ms | p95 ms | $ / 1k | abstains |
+|---|---|---|---|---|---|---|---|---|
+| bylaw | 44.7% (37.6%–51.8%) | 7.1% | 0.37 | 0.27 | 1919 | 2935 | 0.414 | 0 |
+| bylaw+hybrid | 58.4% (51.8%–65.5%) | 7.1% | 0.46 | 0.26 | 1963 | 3689 | 0.655 | 0 |
+| llm:us.amazon.nova-pro-v1:0 | 53.8% (46.7%–60.9%) | 8.0% | 0.42 | 0.41 | 772 | 1254 | 1.524 | 0 |
+| llm:us.amazon.nova-lite-v1:0 | 51.3% (44.7%–58.4%) | 14.2% | 0.43 | 0.42 | 637 | 940 | 0.114 | 3 |
+| llm:mistral.mistral-large-3-675b-instruct | 40.1% (33.0%–47.2%) | 7.1% | 0.41 | 0.59 | 822 | 2693 | 0.994 | 0 |
+
+Hybrid: Decider decided 83.8% of cases alone and escalated 32 to `us.amazon.nova-pro-v1:0`.
+
+
+Environment: {'instance': 'c7i.4xlarge (CPU)', 'decider': {'status': 'ok', 'model': 'strands-decider-2B-qwen3.5-v1-2610', 'checkpoint': 'StrandsAgents/strands-decider-2B-qwen3.5-v1-2610', 'base_model': 'Qwen/Qwen3.5-2B-Base', 'num_slots': 24, 'max_length': 4096, 'temperature': 1.0545210242263665, 'device': 'cpu', 'prefix_cache': True}, 'region': 'us-east-1', 'git_sha': '', 'date': '2026-10-17T14:09:28+00:00', 'prices_retrieved': '2026-10-17'}
