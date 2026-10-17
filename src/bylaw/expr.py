@@ -92,9 +92,42 @@ _CMPOPS = {
 }
 
 
+def _normalize(expr: str) -> str:
+    """Models often write C-style operators. Translate &&, ||, !, ===, !== outside string literals;
+    the result still goes through the same whitelist."""
+    out: list[str] = []
+    quote: str | None = None
+    i = 0
+    while i < len(expr):
+        ch = expr[i]
+        if quote:
+            out.append(ch)
+            if ch == quote and expr[i - 1] != "\\":
+                quote = None
+            i += 1
+            continue
+        if ch in "'\"":
+            quote = ch
+            out.append(ch)
+            i += 1
+            continue
+        for token, repl in (("!==", "!="), ("===", "=="), ("&&", " and "), ("||", " or ")):
+            if expr.startswith(token, i):
+                out.append(repl)
+                i += len(token)
+                break
+        else:
+            if ch == "!" and not expr.startswith("!=", i):
+                out.append(" not ")
+            else:
+                out.append(ch)
+            i += 1
+    return "".join(out)
+
+
 def _parse(expr: str) -> ast.Expression:
     try:
-        tree = ast.parse(expr, mode="eval")
+        tree = ast.parse(_normalize(expr).strip(), mode="eval")
     except SyntaxError as exc:
         raise ExprError(f"not a valid expression: {expr!r}") from exc
     _check(tree.body)

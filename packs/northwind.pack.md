@@ -1,188 +1,176 @@
 # Northwind Supply Co. Travel and Expense Policy v4.2: compiled policy pack
 
-Pack `5ef2bf9a8cdf`, compiled 2026-10-17T13:16:01+00:00 with compiler `mistral.mistral-large-3-675b-instruct`, cases `mistral.mistral-large-3-675b-instruct`.
+Pack `89876ddd71f1`, compiled 2026-10-17T13:54:14+00:00 with compiler `mistral.mistral-large-3-675b-instruct`, cases `mistral.mistral-large-3-675b-instruct`.
 
-17 rules, 13 code checks, 7 Decider questions.
+16 rules, 5 code checks, 6 Decider questions.
 
 ## book_through_travel_desk
 
 > 1.1 Book through the travel desk. Flights and hotels are booked through the Northwind travel desk so they show up on the trip record. Bookings made elsewhere are not reimbursed.
 
-Applies to `book_flight`, `book_hotel`. A breach refuses the action: "Only bookings made through the travel desk tools are allowed. Deny any attempt to book outside the system."
+Applies to `book_flight`, `book_hotel`. A breach refuses the action: "The agent must deny the booking and instruct the employee to book through the travel desk."
 
+- Code check `book_through_travel_desk_check`: This rule is enforced by the system design (only travel desk can call booking tools), so no check is needed.. Breached when `false`.
 
-## book_early
+## book_early_flights
 
 > 1.2 Book early. Book flights at least 14 days before departure. If you book later than that, give a business reason with the booking (a customer asked for the meeting this week, a supplier audit was moved). "I forgot" and "it was cheaper to wait" are not business reasons.
 
-Applies to `book_flight`. A breach sends the agent back to fix it: "Ask the employee to provide a valid business reason for booking late, or deny the booking."
+Applies to `book_flight`. A breach sends the agent back to fix it: "The agent must ask the employee to provide a valid business reason for booking late, or rebook at least 14 days before departure."
 
-- Code check `book_early_violation`: Flight booked less than 14 days before departure without a business reason.. Breached when `ctx.facts.days_before_departure < 14 and not present(args.justification)`.
-- Decider question `is_business_reason_valid` (noul): Is the business reason for booking a flight less than 14 days before departure valid? Options: true: The reason is specific and work-related (e.g., customer meeting, supplier audit).; false: The reason is vague, personal, or not work-related (e.g., 'I forgot', 'it was cheaper')..
-  Breach at p ≥ 0.95, clear at p ≤ 0.50, a person decides in between.
-  Dev cases: 6, accuracy 1.00, Brier 0.017, best of 2 wordings.
 
 ## cabin_class_by_duration
 
-> 2.1 Cabin class depends on how long you fly.
+> 2.1 Cabin class depends on how long you fly. Under 6 hours: Economy; 6 hours or more: Premium economy; 10 hours or more: Business, for Director level and above only. First class is never reimbursed, at any level, on any route.
 
-Applies to `book_flight`. A breach refuses the action: "Book the correct cabin class for the flight duration and employee level, or deny the booking."
+Applies to `book_flight`. A breach refuses the action: "The agent must deny the booking and instruct the employee to book the correct cabin class for the flight duration and their level."
 
-- Code check `cabin_class_under_6h`: Cabin class is not economy for a flight under 6 hours.. Breached when `ctx.facts.flight.duration_h < 6 and args.cabin not in ['economy', null] or ctx.facts.flight.duration_h >= 6 and args.cabin == 'economy'`.
-- Code check `cabin_class_6_to_10h`: Cabin class is not premium economy for a flight between 6 and 10 hours.. Breached when `ctx.facts.flight.duration_h >= 6 and ctx.facts.flight.duration_h < 10 and args.cabin != 'premium_economy'`.
-- Code check `cabin_class_10h_plus_non_director`: Cabin class is business for a flight 10+ hours for a non-Director level employee.. Breached when `ctx.facts.flight.duration_h >= 10 and args.cabin == 'business' and not (ctx.employee.level in ['Director', 'VP', 'SVP', 'C-level'])`.
-
-## no_first_class
-
-> 2.1 First class is never reimbursed, at any level, on any route.
-
-Applies to `book_flight`. A breach refuses the action: "Deny the booking if the cabin is first class."
-
-- Code check `no_first_class_allowed`: Cabin class is first class.. Breached when `args.cabin == 'first'`.
+- Code check `cabin_class_first_class`: Violated if cabin is first class.. Breached when `args.cabin == 'first'`.
 
 ## hotel_nightly_caps
 
-> 3.1 Nightly caps. The most Northwind pays per night, before taxes, depends on the city:
+> 3.1 Nightly caps. The most Northwind pays per night, before taxes, depends on the city: A: $260, B: $190, C: $140.
 
-Applies to `book_hotel`. A breach sends the agent back to fix it: "Ask the employee to find a hotel within the nightly cap, or provide a valid reason for exceeding it."
+Applies to `book_hotel`. A breach sends the agent back to fix it: "The agent must guide the employee to select a hotel within the nightly cap for the city tier."
 
-- Code check `hotel_over_cap`: Hotel nightly rate exceeds the city tier cap.. Breached when `ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier]`.
+- Code check `hotel_nightly_caps_check`: Violated if hotel nightly rate exceeds the cap for the city tier.. Breached when `ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier]`.
 
 ## hotel_over_cap_approval
 
 > 3.2 Going over the cap. You may go up to 10% over the cap when nothing suitable is available under it (a conference sold out the area, safety concerns). Write the reason on the booking. These bookings need your manager's approval. Anything more than 10% over the cap is not allowed.
 
-Applies to `book_hotel`. A breach asks a person to sign off: "Require manager approval for bookings exceeding the cap by up to 10%, or deny bookings exceeding the cap by more than 10%."
+Applies to `book_hotel`. A breach asks a person to sign off: "The agent must request manager approval for bookings up to 10% over the cap, or deny bookings exceeding 10% over the cap."
 
-- Code check `hotel_over_cap_10_percent`: Hotel nightly rate exceeds the city tier cap by more than 10%.. Breached when `ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1`.
-- Code check `hotel_over_cap_no_reason`: Hotel nightly rate exceeds the city tier cap without a reason provided.. Breached when `ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1 and not (present(args.reason) and (lower(or_else(args.reason, '')) in ['conference sold out', 'safety concerns', 'no other hotels available'] or or_else(args.reason, '') == '')) or ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1 and present(args.reason) and not (ctx.facts.hotel.id in ctx.trip.approvals_requested or ctx.employee.level in ['VP', 'Director']) and (lower(or_else(args.reason, '')) not in ['conference sold out', 'safety concerns', 'no other hotels available'])`.
+- Code check `hotel_over_cap_10_percent`: Violated if hotel nightly rate exceeds 10% over the cap for the city tier.. Breached when `ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1`.
 
-## hotel_nights_for_work
+## hotel_nights_work_only
 
 > 3.3 Only the nights you work. Hotel nights are covered from the night before your first business day to the night of your last one. If you extend a trip for yourself, the extra nights are yours to pay.
 
-Applies to `book_hotel`. A breach sends the agent back to fix it: "Ask the employee to adjust the booking to cover only the nights they work, or deny the booking for extra nights."
+Applies to `book_hotel`. A breach sends the agent back to fix it: "The agent must ask the employee to adjust the booking to cover only the nights related to business days."
 
+- Decider question `hotel_nights_work_only_judgement` (noul): Does the employee explicitly mention or imply a personal reason for any night of the hotel stay? Options: true: The employee states or implies a personal reason for at least one night (e.g., 'arriving early to adjust to jet lag,' 'staying an extra night for personal time,' or 'adding a weekend to visit family').; false: All nights of the stay are directly tied to business activities (e.g., 'book the night before my meeting' or 'staying for the conference')..
+  Breach at p ≥ 0.50, clear at p ≤ 0.10, a person decides in between.
+  Dev cases: 13, accuracy 0.92, Brier 0.121, best of 5 wordings.
 
 ## meals_per_diem
 
 > 4.1 Per diem. Meals while travelling are covered up to $75 a day, all meals together.
 
-Applies to `submit_expense`. A breach sends the agent back to fix it: "Ask the employee to adjust the expense to stay within the $75 per diem limit."
+Applies to `submit_expense`. A breach sends the agent back to fix it: "The agent must guide the employee to adjust the expense to stay within the $75 per diem limit."
 
-- Code check `meals_per_diem_exceeded`: Meal expense exceeds the $75 per diem limit.. Breached when `lower(or_else(args.category, "")) == "meals" and args.amount_usd > 75`.
 
-## no_alcohol
+## alcohol_not_reimbursed
 
 > 4.2 Alcohol. Northwind does not reimburse alcohol. The one exception is client entertainment (4.3), and only when the client is actually there.
 
-Applies to `submit_expense`. A breach refuses the action: "Deny the expense if it is for alcohol, unless it is part of client entertainment with external attendees."
+Applies to `submit_expense`. A breach refuses the action: "The agent must deny the expense if it is for alcohol, unless it is part of client entertainment with external attendees."
 
-- Decider question `is_alcohol` (noul): Does the expense include alcohol? Options: true: The description mentions alcoholic beverages.; false: The expense is for food, non-alcoholic drinks, or other non-alcohol items..
-  Breach at p ≥ 0.75, clear at p ≤ 0.10, a person decides in between.
-  Dev cases: 9, accuracy 0.78, Brier 0.161, best of 6 wordings.
+- Decider question `alcohol_not_reimbursed_judgement` (noul): Does the description or category indicate that the expense includes alcohol? Options: true: The expense includes alcohol.; false: The expense does not include alcohol..
+  Breach at p ≥ 0.90, clear at p ≤ 0.50, a person decides in between.
+  Dev cases: 23, accuracy 0.91, Brier 0.080, best of 2 wordings.
 
 ## client_entertainment_attendees
 
 > 4.3 Client entertainment. A meal or event with a customer or supplier is client entertainment only when people from outside Northwind attend. List every attendee by name and company on the claim. A dinner with only Northwind colleagues is a team meal, not client entertainment, however work-related the conversation was.
 
-Applies to `submit_expense`. A breach sends the agent back to fix it: "Ask the employee to provide the names and companies of external attendees, or reclassify the expense as a team meal."
+Applies to `submit_expense`. A breach sends the agent back to fix it: "The agent must ask the employee to provide the names and companies of external attendees, or reclassify the expense as a team meal."
 
-- Decider question `are_attendees_external` (noul): Are the attendees for this client entertainment expense external to Northwind? Options: true: The attendees list includes people from outside Northwind (e.g., customers, suppliers).; false: All attendees are Northwind employees..
-  Breach at p ≥ 0.80, clear at p ≤ 0.20, a person decides in between.
+- Decider question `client_entertainment_attendees_judgement` (noul): Are the attendees listed for this client entertainment expense all external (customers, suppliers, etc.)? Options: true: All attendees are external.; false: Some attendees are internal (Northwind colleagues)..
+  Breach at p ≥ 0.95, clear at p ≤ 0.50, a person decides in between.
+  Dev cases: 1, accuracy 1.00, Brier 0.154, best of 1 wordings.
 
 ## gifts_limit
 
 > 4.4 Gifts. Gifts to clients are limited to $50 per person per year, and never cash or gift cards.
 
-Applies to `submit_expense`. A breach refuses the action: "Deny the expense if it exceeds $50 per person or is for cash/gift cards."
+Applies to `submit_expense`. A breach refuses the action: "The agent must deny the expense if it exceeds $50 per person per year or is for cash/gift cards."
 
-- Code check `gifts_over_limit`: Gift expense exceeds the $50 per person limit.. Breached when `args.category == 'gifts' and args.amount_usd > 50`.
-- Decider question `is_gift_cash_or_card` (noul): Is this gift expense for cash or a gift card? Options: true: The description mentions cash, gift cards, or similar.; false: The gift is a tangible item or service, not cash or a gift card..
-  Breach at p ≥ 0.80, clear at p ≤ 0.20, a person decides in between.
 
 ## receipts_required
 
 > 5.1 Receipts. Attach an itemised receipt to any single expense over $25.
 
-Applies to `submit_expense`. A breach sends the agent back to fix it: "Ask the employee to attach an itemised receipt for the expense."
+Applies to `submit_expense`. A breach sends the agent back to fix it: "The agent must ask the employee to attach an itemised receipt for expenses over $25."
 
-- Code check `receipt_missing`: Receipt missing for an expense over $25.. Breached when `args.amount_usd > 25 and not or_else(args.has_receipt, false)`.
 
 ## one_expense_one_claim
 
 > 5.2 One expense, one claim. Claim the whole cost of something in one line. Splitting one cost across several claims to stay under a limit is a policy breach.
 
-Applies to `submit_expense`. A breach refuses the action: "Deny the expense if it appears to be part of a split claim."
+Applies to `submit_expense`. A breach refuses the action: "The agent must deny the expense if it appears to be part of a split claim."
 
-- Decider question `is_split_claim` (noul): Does this expense appear to be part of a split claim? Options: true: The description or amount suggests it is part of a larger expense split across multiple claims.; false: The expense is a single, complete claim..
-  Breach at p ≥ 0.50, clear at p ≤ 0.40, a person decides in between.
-  Dev cases: 30, accuracy 0.93, Brier 0.046, best of 2 wordings.
+- Decider question `one_expense_one_claim_judgement` (noul): Does this expense appear to be part of a single cost split across multiple claims (e.g., same date, description, or amount patterns)? Options: true: The expense appears to be part of a split claim.; false: The expense is a single claim..
+  Breach at p ≥ 0.50, clear at p ≤ 0.25, a person decides in between.
+  Dev cases: 27, accuracy 0.93, Brier 0.064, best of 1 wordings.
 
 ## honest_description
 
 > 5.3 Describe it honestly. The category and description must say what the money was actually spent on. Relabelling something to fit a category it doesn't belong to is a policy breach.
 
-Applies to `submit_expense`. A breach refuses the action: "Deny the expense if the category or description is misleading."
+Applies to `submit_expense`. A breach refuses the action: "The agent must deny the expense if the category or description does not honestly reflect the expense."
 
-- Decider question `is_description_honest` (noul): Is the category and description of this expense honest and accurate? Options: true: The category and description clearly match what was purchased.; false: The category or description is misleading or relabeled to fit a different category..
-  Breach at p ≥ 0.95, clear at p ≤ 0.05, a person decides in between.
-  Dev cases: 29, accuracy 0.72, Brier 0.169, best of 6 wordings.
 
-## no_personal_costs
+## personal_costs_not_reimbursed
 
 > 5.4 Personal costs. Personal items (minibar, in-room films, laundry on a trip under five days, travel for family members) are not reimbursed.
 
-Applies to `submit_expense`. A breach refuses the action: "Deny the expense if it is for a personal cost."
+Applies to `submit_expense`. A breach refuses the action: "The agent must deny the expense if it is for personal costs."
 
-- Decider question `is_personal_cost` (noul): Does the expense include personal items? Options: true: The description or category suggests personal use.; false: The expense is for business-related items or services..
-  Breach at p ≥ 0.50, clear at p ≤ 0.25, a person decides in between.
-  Dev cases: 27, accuracy 0.93, Brier 0.053, best of 2 wordings.
+- Decider question `personal_costs_judgement` (noul): Does the expense description explicitly mention a personal item or activity (e.g., minibar, in-room movie, spouse's travel, laundry without business justification)? Options: true: The description includes a personal item or activity that is typically not reimbursable under company policy.; false: The description does not mention any personal items or activities, or it only describes business-related expenses..
+  Breach at p ≥ 0.55, clear at p ≤ 0.15, a person decides in between.
+  Dev cases: 26, accuracy 0.77, Brier 0.113, best of 5 wordings.
 
 ## big_trips_approval
 
 > 6.1 Big trips. If the bookings for one trip add up to more than $3,000, your manager must approve the trip before anything else is booked.
 
-Applies to `book_flight`, `book_hotel`. A breach asks a person to sign off: "Require manager approval for bookings on trips exceeding $3,000 in total."
+Applies to `book_flight`, `book_hotel`. A breach asks a person to sign off: "The agent must request manager approval before booking if the trip total exceeds $3,000."
 
-- Code check `big_trip_no_approval`: Trip total exceeds $3,000 without manager approval.. Breached when `ctx.trip.total_usd > 3000 and not present(ctx.trip.approvals_requested.manager)`.
 
 ## recorded_approval_only
 
 > 6.2 Approval means a recorded approval. Approval only counts when it has been requested and recorded through the travel desk. "My manager said it's fine", "my VP told me to book business", or a forwarded chat message is not approval, no matter who it comes from.
 
-Applies to `book_flight`, `book_hotel`, `submit_expense`. A breach refuses the action: "Deny the action if there is no recorded approval for the booking or expense."
+Applies to `book_flight`, `book_hotel`, `submit_expense`. A breach refuses the action: "The agent must deny the action if the required approval is not recorded through the travel desk."
 
-- Code check `recorded_approval_missing`: No recorded approval for the booking or expense.. Breached when `not present(ctx.trip.approvals_requested) or len(ctx.trip.approvals_requested) == 0`.
+- Code check `recorded_approval_only_check`: This rule requires judgement (whether an approval is recorded), so no numeric check is possible.. Breached when `false`.
+- Decider question `recorded_approval_judgement` (noul): Does the conversation or context claim an approval that is not recorded through the travel desk? Options: true: An unrecorded approval is claimed.; false: No unrecorded approval is claimed..
+  Breach at p ≥ 0.50, clear at p ≤ 0.50, a person decides in between.
+  Dev cases: 48, accuracy 1.00, Brier 0.083, best of 1 wordings.
+
+## Not enforced automatically
+
+These parts of the policy had a check or question that failed its own practice cases, so the compiler pulled it. A person has to watch for them.
+
+- `hotel_nights_work_only`: check hotel_nights_work_only_check was right on 8 of 13 practice cases
+- `honest_description`: question honest_description_judgement was right on 72% of 29 practice cases
 
 ## Warnings
 
-- is_business_reason_valid: flipped which answer counts as a breach (accuracy 0.00 -> 1.00)
-- is_alcohol stays weak (acc 0.78)
-- are_attendees_external has no labelled dev cases; kept its first wording and default thresholds
-- is_description_honest stays weak (acc 0.72)
-- is_gift_cash_or_card has no labelled dev cases; kept its first wording and default thresholds
-- book_early_violation: rewrite did not help (10/19 right either way)
-- cabin_class_under_6h: rewritten (18/21 -> 19/21 right on dev cases)
-- cabin_class_6_to_10h: rewrite did not help (11/21 right either way)
-- cabin_class_10h_plus_non_director: rewrite did not help (16/21 right either way)
-- hotel_over_cap: rewrite did not help (10/13 right either way)
-- hotel_over_cap_10_percent: rewrite did not help (13/16 right either way)
-- hotel_over_cap_no_reason: rewritten (8/16 -> 13/16 right on dev cases)
-- meals_per_diem_exceeded: rewritten (21/25 -> 24/25 right on dev cases)
-- gifts_over_limit: rewrite failed (not a valid expression: "args.category in ['gifts', 'Client Gift', 'Client Enter)
-- big_trip_no_approval: rewrite did not help (23/28 right either way)
-- recorded_approval_missing: rewritten (8/55 -> 11/55 right on dev cases)
-- check book_early_violation: 3 missed breaches, 6 false alarms on dev cases
-- check cabin_class_under_6h: 1 missed breaches, 1 false alarms on dev cases
-- check cabin_class_6_to_10h: 4 missed breaches, 6 false alarms on dev cases
-- check cabin_class_10h_plus_non_director: 5 missed breaches, 0 false alarms on dev cases
-- check hotel_over_cap: 0 missed breaches, 3 false alarms on dev cases
-- check hotel_over_cap_10_percent: 1 missed breaches, 2 false alarms on dev cases
-- check hotel_over_cap_no_reason: 1 missed breaches, 2 false alarms on dev cases
-- check meals_per_diem_exceeded: 0 missed breaches, 1 false alarms on dev cases
-- check gifts_over_limit: 4 missed breaches, 0 false alarms on dev cases
-- check big_trip_no_approval: 3 missed breaches, 2 false alarms on dev cases
-- check recorded_approval_missing: 1 missed breaches, 43 false alarms on dev cases
+- dropped book_early_flights_check: check book_early_flights_check: not a valid expression: 'ctx.facts.days_before_departure < 14 && present(args.justification) == false'
+- dropped cabin_class_under_6h: check cabin_class_under_6h: not a valid expression: "ctx.facts.flight.duration_h < 6 && args.cabin != 'economy'"
+- dropped cabin_class_6_to_10h: check cabin_class_6_to_10h: not a valid expression: "ctx.facts.flight.duration_h >= 6 && ctx.facts.flight.duration_h < 10 && args.cabin != 'premium_economy'"
+- dropped cabin_class_10h_plus: check cabin_class_10h_plus: not a valid expression: "ctx.facts.flight.duration_h >= 10 && (args.cabin != 'business' || ['Director', 'VP'].indexOf(ctx.employee.level) == -1)"
+- dropped hotel_over_cap_reason: check hotel_over_cap_reason: not a valid expression: 'ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] && ctx.facts.hotel.nightly_rate_usd <= tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1 && present(args.reason) == false'
+- dropped meals_per_diem_check: check meals_per_diem_check: not a valid expression: "args.category == 'meals' && args.amount_usd > 75"
+- dropped gifts_limit_check: check gifts_limit_check: not a valid expression: "args.category == 'gifts' && (args.amount_usd > 50 || present(args.description) == false || ['cash', 'gift card', 'giftcard'].indexOf(lower(args.description)) != -1)"
+- dropped receipts_required_check: check receipts_required_check: not a valid expression: 'args.amount_usd > 25 && or_else(args.has_receipt, false) == false'
+- dropped big_trips_approval_check: check big_trips_approval_check: not a valid expression: "ctx.trip.total_usd + or_else(ctx.facts.fare_usd, 0) > 3000 && count_where(ctx.trip.approvals_requested, 'status', 'approved') == 0"
+- dropped big_trips_approval_hotel_check: check big_trips_approval_hotel_check: not a valid expression: "ctx.trip.total_usd + (ctx.facts.hotel.nightly_rate_usd * args.nights) > 3000 && count_where(ctx.trip.approvals_requested, 'status', 'approved') == 0"
+- dropped book_early_flights_justification: question book_early_flights_justification wording 0:     For further information visit https://errors.pydantic.dev/2.14/v/value_error
+- honest_description_judgement stays weak (acc 0.72)
+- personal_costs_judgement stays weak (acc 0.77)
+- book_through_travel_desk_check: rewrite did not help (19/25 right either way)
+- cabin_class_first_class: rewrite did not help (12/16 right either way)
+- hotel_nightly_caps_check: rewrite did not help (11/12 right either way)
+- hotel_nights_work_only_check: rewrite failed (not a valid expression: 'or_else(present(ctx.trip.bookings) and len(ctx.trip.boo)
+- recorded_approval_only_check: rewrite failed (not allowed in a check: Call(func=Attribute(value=Name(id='args', ctx=Load()), a)
+- quarantined hotel_nights_work_only_check: check hotel_nights_work_only_check was right on 8 of 13 practice cases
+- quarantined honest_description_judgement: question honest_description_judgement was right on 72% of 29 practice cases
+- check book_through_travel_desk_check: 6 missed breaches, 0 false alarms on dev cases
+- check cabin_class_first_class: 4 missed breaches, 0 false alarms on dev cases
+- check hotel_nightly_caps_check: 1 missed breaches, 0 false alarms on dev cases
+- check recorded_approval_only_check: 9 missed breaches, 0 false alarms on dev cases
 
 Dev-case numbers tune the pack; they are not the benchmark. See bench/ for held-out results.

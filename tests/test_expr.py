@@ -82,3 +82,15 @@ def test_json_style_literals_are_accepted():
     assert evaluate("args.has_receipt == false", e) is True
     assert evaluate("args.x == null", e) is True
     assert evaluate("true and not false", e) is True
+
+
+def test_c_style_operators_are_normalized():
+    e = env(args={"category": "meals", "amount_usd": 80, "cabin": "economy", "note": "a && b || !c"},
+            ctx={"employee": {"level": "IC3"}})
+    assert evaluate("args.category == 'meals' && args.amount_usd > 75", e) is True
+    assert evaluate("args.cabin === 'first' || args.amount_usd > 75", e) is True
+    assert evaluate("!(args.amount_usd > 75)", e) is False
+    assert evaluate("args.cabin !== 'economy'", e) is False
+    assert evaluate("args.note == 'a && b || !c'", e) is True  # strings are left alone
+    with pytest.raises(ExprError):
+        validate("['Director', 'VP'].indexOf(ctx.employee.level) == -1")  # method calls stay out
