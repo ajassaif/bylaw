@@ -45,5 +45,62 @@ def compile(
                f"{len(pack.questions)} questions, {len(cases)} dev cases")
 
 
+@app.command("make-heldout")
+def make_heldout(
+    policy: Path = typer.Argument(..., exists=True),
+    out: Path = typer.Option(...),
+    model: str = typer.Option(config.HELDOUT_MODEL, help="Must be a different family from the dev-case model."),
+    n: int = typer.Option(160),
+    region: str = typer.Option(config.REGION),
+) -> None:
+    """Write held-out cases from the policy text alone."""
+    from bylaw.bench.heldout import generate_heldout
+    from bylaw.cases import save_cases
+    from bylaw.llm import BedrockLLM
+
+    if model.split(".")[1:2] == config.CASE_MODEL.split(".")[1:2]:
+        raise typer.BadParameter(f"{model} is the same family as the dev-case model {config.CASE_MODEL}")
+    cases = generate_heldout(policy.read_text(encoding="utf-8"), BedrockLLM(region), model, n)
+    save_cases(cases, out)
+    typer.echo(f"wrote {len(cases)} held-out cases to {out}. Review every label before benchmarking.")
+
+
+@app.command()
+def bench(
+    pack: Path = typer.Option(..., exists=True),
+    policy: Path = typer.Option(..., exists=True),
+    cases: Path = typer.Option(..., exists=True),
+    out: Path = typer.Option(...),
+    baselines: str = typer.Option(",".join(config.BASELINES)),
+    hybrid_model: str = typer.Option(config.HYBRID_MODEL),
+    prices: Path = typer.Option(Path("bench/prices.json"), exists=True,
+                                help='{"models": {id: [usd_per_1M_in, usd_per_1M_out]}, "gpu_usd_per_hour": x}'),
+    instance: str = typer.Option("unknown", help="EC2 instance type the Decider ran on."),
+    decider_url: str = typer.Option(config.DECIDER_URL),
+    region: str = typer.Option(config.REGION),
+) -> None:
+    """Score Bylaw against Bedrock models deciding alone. Writes cases.jsonl, summary.json, report.md."""
+    import json
+    import subprocess
+    from datetime import UTC, datetime
+
+    from bylaw.bench.run import run_bench
+    from bylaw.cases import load_cases
+    from bylaw.decider import DeciderClient
+    from bylaw.llm import BedrockLLM
+    from bylaw.pack import load_pack
+
+    price_data = json.loads(prices.read_text(encoding="utf-8"))
+    decider = DeciderClient(decider_url, timeout=120)
+    sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    env = {"instance": instance, "decider": decider.health(), "region": region, "git_sha": sha,
+           "date": datetime.now(UTC).isoformat(timespec="seconds"), "prices_retrieved": price_data.get("retrieved")}
+    summary = run_bench(load_pack(pack), policy.read_text(encoding="utf-8"), load_cases(cases), decider,
+                        BedrockLLM(region), [b for b in baselines.split(",") if b], hybrid_model, out,
+                        {k: tuple(v) for k, v in price_data["models"].items()}, price_data["gpu_usd_per_hour"], env)
+    typer.echo((out / "report.md").read_text(encoding="utf-8"))
+    typer.echo(f"{summary['n_cases']} cases scored; results in {out}")
+
+
 if __name__ == "__main__":
     app()

@@ -1,0 +1,6 @@
+{
+  "retrieved": null,
+  "note": "Placeholder. Fill from the AWS Bedrock and EC2 pricing pages for the chosen region before benchmarking (plan Task 16).",
+  "gpu_usd_per_hour": 0.0,
+  "models": {}
+}
