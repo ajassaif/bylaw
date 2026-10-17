@@ -13,7 +13,7 @@ export type Question = {
   when?: string | null;
   dev?: { n: number; accuracy: number; brier: number; candidates: number } | null;
 };
-export type Pack = { policy_title: string; hash: string; models: Record<string, string>; rules: Rule[]; checks: Check[]; questions: Question[] };
+export type Pack = { policy_title: string; hash: string; models: Record<string, string>; rules: Rule[]; checks: Check[]; questions: Question[]; unenforced?: Record<string, string> };
 export type Finding = { rule_id: string; source: "check" | "decider"; item_id: string; p_violation: number | null; status: "violation" | "clear" | "uncertain" };
 export type Verdict = { action: Action; rule_id: string | null; message: string; confidence: number; uncertain: boolean; findings: Finding[] };
 export type Receipt = {

@@ -44,6 +44,11 @@ function Note({ rules, pack, findings, tone }: { rules: Rule[]; pack: Pack; find
         <LiveLine finding={findings.get(q.id)} tone={tone} />
       </li>
     )),
+    ...rules.filter((r) => pack.unenforced?.[r.id]).map((r) => (
+      <li key={`pulled-${r.id}`} className="pulled">
+        <span className="kind">not enforced automatically</span> {pack.unenforced![r.id]}, so the compiler pulled it. A person has to watch for this.
+      </li>
+    )),
   ]);
   return (
     <aside className="note" aria-label="How this clause is enforced">

@@ -172,6 +172,7 @@ a { color: var(--sent-back); }
 .note .live.violation { color: var(--tone, var(--refused)); }
 .note .live.clear { color: var(--cleared); }
 .note .live.uncertain { color: var(--sign-off); }
+.note .pulled { color: var(--ink-soft); font-style: italic; }
 
 /* ---------- desk ---------- */
 .desk {
