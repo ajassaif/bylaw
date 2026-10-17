@@ -93,6 +93,8 @@ class Pack(BaseModel):
     checks: list[Check]
     questions: list[Question]
     tables: dict[str, Any] = {}
+    # Rules whose check or question failed its own practice cases and was pulled: rule id -> why.
+    unenforced: dict[str, str] = {}
 
     @model_validator(mode="after")
     def _references_exist(self) -> Pack:

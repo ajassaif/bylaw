@@ -191,3 +191,33 @@ def test_generated_cases_must_fit_tool_schemas():
     assert len(cases) == 2  # one good case per rule survives
     assert any("unknown argument amount" in w for w in warnings)
     assert "submit_expense(category: string, amount_usd: number" in case_rules()
+
+
+def test_quarantine_pulls_checks_and_questions_that_fail_practice_cases():
+    from bylaw.compiler.pipeline import quarantine
+    from bylaw.pack import Check, Question, QuestionMetrics
+
+    always = Check(id="always", rule_id="receipt", expr="true", description="fires on everything")
+    good = Check(id="good", rule_id="receipt", expr="num(args.amount_usd) > 25 and not or_else(args.has_receipt, false)",
+                 description="d")
+    weak_q = Question(id="weak", rule_id="alcohol", type="noul", instructions="?", violation=Violation(when_true=True),
+                      dev=QuestionMetrics(n=10, accuracy=0.6, brier=0.3, candidates=2))
+    untested = Question(id="untested", rule_id="alcohol", type="noul", instructions="?",
+                        violation=Violation(when_true=True))
+    clean = [case(i, "proceed", None, False) for i in range(6)]
+    checks, questions, unenforced, warnings = quarantine([always, good], [weak_q, untested], RULES, clean, {})
+    assert [c.id for c in checks] == ["good"]
+    assert [q.id for q in questions] == ["untested"]
+    assert unenforced == {"receipt": "check always was right on 0 of 6 practice cases",
+                          "alcohol": "question weak was right on 60% of 10 practice cases"}
+    assert any("quarantined always" in w for w in warnings)
+
+
+def test_pack_carries_unenforced_rules(tmp_path):
+    from bylaw.compiler.pipeline import assemble_pack
+
+    pack = assemble_pack(DRAFT, [], "POLICY", CompileConfig("a", "b", "r"), unenforced={"alcohol": "why"})
+    path = tmp_path / "p.json"
+    save_pack(pack, path)
+    assert load_pack(path).unenforced == {"alcohol": "why"}
+    assert "Not enforced automatically" in render_report(pack, [])

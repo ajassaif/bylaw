@@ -10,11 +10,11 @@ from bylaw import expr
 from bylaw.cases import Case, question_label
 from bylaw.compiler.extract import Draft, extract_draft
 from bylaw.compiler.generate import generate_cases
-from bylaw.compiler.repair import repair_checks
+from bylaw.compiler.repair import _rows, _score, repair_checks
 from bylaw.compiler.report import render_report
 from bylaw.compiler.tune import tune
 from bylaw.llm import JsonLLM
-from bylaw.pack import Pack, Question
+from bylaw.pack import Check, Pack, Question, Rule
 
 
 @dataclass
@@ -26,8 +26,41 @@ class CompileConfig:
     rounds: int = 2
 
 
-def assemble_pack(draft: Draft, questions: list[Question], policy_text: str, cfg: CompileConfig) -> Pack:
-    return Pack(policy_title=draft.title, policy_sha256=hashlib.sha256(policy_text.encode()).hexdigest(),
+QUARANTINE_ACCURACY = 0.75
+QUARANTINE_MIN_CASES = 5
+
+
+def quarantine(checks: list[Check], questions: list[Question], rules: list[Rule], cases: list[Case],
+               tables: dict) -> tuple[list[Check], list[Question], dict[str, str], list[str]]:
+    """Pull any check or question that scored under 75% on at least five practice cases. A pack that
+    enforces less but enforces it correctly beats one that refuses every booking."""
+    by_rule = {r.id: r for r in rules}
+    pulled: dict[str, list[str]] = {}
+    warnings: list[str] = []
+    kept_checks = []
+    for c in checks:
+        rows = _rows(c, by_rule[c.rule_id], cases, tables)
+        correct, _ = _score(rows)
+        if len(rows) >= QUARANTINE_MIN_CASES and correct / len(rows) < QUARANTINE_ACCURACY:
+            why = f"check {c.id} was right on {correct} of {len(rows)} practice cases"
+            pulled.setdefault(c.rule_id, []).append(why)
+            warnings.append(f"quarantined {c.id}: {why}")
+        else:
+            kept_checks.append(c)
+    kept_questions = []
+    for q in questions:
+        if q.dev and q.dev.n >= QUARANTINE_MIN_CASES and q.dev.accuracy < QUARANTINE_ACCURACY:
+            why = f"question {q.id} was right on {q.dev.accuracy:.0%} of {q.dev.n} practice cases"
+            pulled.setdefault(q.rule_id, []).append(why)
+            warnings.append(f"quarantined {q.id}: {why}")
+        else:
+            kept_questions.append(q)
+    return kept_checks, kept_questions, {k: "; ".join(v) for k, v in pulled.items()}, warnings
+
+
+def assemble_pack(draft: Draft, questions: list[Question], policy_text: str, cfg: CompileConfig,
+                  unenforced: dict[str, str] | None = None) -> Pack:
+    return Pack(unenforced=unenforced or {}, policy_title=draft.title, policy_sha256=hashlib.sha256(policy_text.encode()).hexdigest(),
                 compiled_at=datetime.now(UTC).isoformat(timespec="seconds"),
                 models={"compiler": cfg.model_id, "cases": cfg.case_model_id},
                 rules=draft.rules, checks=draft.checks, questions=questions, tables=draft.tables)
@@ -67,7 +100,10 @@ def compile_policy(policy_text: str, llm: JsonLLM, decider, cfg: CompileConfig,
     questions, tune_warnings = tune(draft, cases, decider, cfg.rounds, llm, cfg.model_id)
     stage("repairing checks")
     checks, repair_warnings = repair_checks(draft.checks, draft.rules, cases, draft.tables, llm, cfg.model_id)
+    stage("quarantining anything that failed its practice cases")
+    checks, questions, unenforced, quarantine_warnings = quarantine(checks, questions, draft.rules, cases, draft.tables)
     draft = draft.model_copy(update={"checks": checks})
-    pack = assemble_pack(draft, questions, policy_text, cfg)
-    warnings = [*draft.warnings, *case_warnings, *tune_warnings, *repair_warnings, *check_warnings(pack, cases)]
+    pack = assemble_pack(draft, questions, policy_text, cfg, unenforced)
+    warnings = [*draft.warnings, *case_warnings, *tune_warnings, *repair_warnings, *quarantine_warnings,
+                *check_warnings(pack, cases)]
     return pack, cases, render_report(pack, warnings)

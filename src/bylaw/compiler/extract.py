@@ -55,6 +55,10 @@ applies to (only booking/expense tools, never searches), on_violation, and a one
 the agent can act on.
    on_violation is "guide" when the agent can fix it itself (cheaper option, ask the employee), \
 "confirm" when a named person must sign off, "deny" when the policy forbids it outright.
+   Read permissions and obligations carefully. "You may", "up to" and "at most" set a ceiling: \
+anything at or under it is allowed, so a check fires only when the action goes beyond it. "Must" \
+sets a requirement. A clause that says what does NOT count (for example, that a claimed approval is \
+not an approval) only changes how other rules are checked; it is not a rule that every action breaks.
 2. Put every FACT test in "checks": numbers, dates, durations, levels, categories, amounts. A check \
 is one expression that is TRUE WHEN THE RULE IS BROKEN. The expression language allows: names \
 args, ctx, tables; dotted or ["key"] access; and/or/not; == != < <= > >= in, not in; + - * /; \
@@ -80,6 +84,13 @@ first).
 The classifier sees this state, so write questions answerable from it:
 {profile}
 today: ..., employee: {{name, title, level, manager...}}, trip: {{bookings, total_usd, approvals_requested}}, facts: {{looked-up inventory facts}}
+
+Context shapes for checks: ctx.trip.bookings is a list of {{kind, ref, detail, date, amount_usd}} \
+already booked; ctx.trip.total_usd is their sum and does NOT include the proposed call (add \
+ctx.facts.fare_usd for a flight, or ctx.facts.hotel.nightly_rate_usd * num(args.nights) for a \
+hotel); ctx.trip.approvals_requested is a list of {{approver, reason, status}} where status is \
+"pending" or "approved" (count approved ones with count_where); ctx.employee.level is one of IC1-IC5, \
+Manager, Director, VP.
 
 {conversation}
 user: ...

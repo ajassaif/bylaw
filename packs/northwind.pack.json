@@ -1,0 +1,435 @@
+{
+  "version": 1,
+  "policy_title": "Northwind Supply Co. Travel and Expense Policy v4.2",
+  "policy_sha256": "8ca5f8ea1c43a81fc210e9994dec082f6bed162a5ce87fda5a1c2d3e5f13228f",
+  "compiled_at": "2026-10-17T13:16:01+00:00",
+  "models": {
+    "compiler": "mistral.mistral-large-3-675b-instruct",
+    "cases": "mistral.mistral-large-3-675b-instruct"
+  },
+  "rules": [
+    {
+      "id": "book_through_travel_desk",
+      "text": "1.1 Book through the travel desk. Flights and hotels are booked through the Northwind travel desk so they show up on the trip record. Bookings made elsewhere are not reimbursed.",
+      "tools": [
+        "book_flight",
+        "book_hotel"
+      ],
+      "on_violation": "deny",
+      "remedy": "Only bookings made through the travel desk tools are allowed. Deny any attempt to book outside the system."
+    },
+    {
+      "id": "book_early",
+      "text": "1.2 Book early. Book flights at least 14 days before departure. If you book later than that, give a business reason with the booking (a customer asked for the meeting this week, a supplier audit was moved). \"I forgot\" and \"it was cheaper to wait\" are not business reasons.",
+      "tools": [
+        "book_flight"
+      ],
+      "on_violation": "guide",
+      "remedy": "Ask the employee to provide a valid business reason for booking late, or deny the booking."
+    },
+    {
+      "id": "cabin_class_by_duration",
+      "text": "2.1 Cabin class depends on how long you fly.",
+      "tools": [
+        "book_flight"
+      ],
+      "on_violation": "deny",
+      "remedy": "Book the correct cabin class for the flight duration and employee level, or deny the booking."
+    },
+    {
+      "id": "no_first_class",
+      "text": "2.1 First class is never reimbursed, at any level, on any route.",
+      "tools": [
+        "book_flight"
+      ],
+      "on_violation": "deny",
+      "remedy": "Deny the booking if the cabin is first class."
+    },
+    {
+      "id": "hotel_nightly_caps",
+      "text": "3.1 Nightly caps. The most Northwind pays per night, before taxes, depends on the city:",
+      "tools": [
+        "book_hotel"
+      ],
+      "on_violation": "guide",
+      "remedy": "Ask the employee to find a hotel within the nightly cap, or provide a valid reason for exceeding it."
+    },
+    {
+      "id": "hotel_over_cap_approval",
+      "text": "3.2 Going over the cap. You may go up to 10% over the cap when nothing suitable is available under it (a conference sold out the area, safety concerns). Write the reason on the booking. These bookings need your manager's approval. Anything more than 10% over the cap is not allowed.",
+      "tools": [
+        "book_hotel"
+      ],
+      "on_violation": "confirm",
+      "remedy": "Require manager approval for bookings exceeding the cap by up to 10%, or deny bookings exceeding the cap by more than 10%."
+    },
+    {
+      "id": "hotel_nights_for_work",
+      "text": "3.3 Only the nights you work. Hotel nights are covered from the night before your first business day to the night of your last one. If you extend a trip for yourself, the extra nights are yours to pay.",
+      "tools": [
+        "book_hotel"
+      ],
+      "on_violation": "guide",
+      "remedy": "Ask the employee to adjust the booking to cover only the nights they work, or deny the booking for extra nights."
+    },
+    {
+      "id": "meals_per_diem",
+      "text": "4.1 Per diem. Meals while travelling are covered up to $75 a day, all meals together.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "guide",
+      "remedy": "Ask the employee to adjust the expense to stay within the $75 per diem limit."
+    },
+    {
+      "id": "no_alcohol",
+      "text": "4.2 Alcohol. Northwind does not reimburse alcohol. The one exception is client entertainment (4.3), and only when the client is actually there.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "deny",
+      "remedy": "Deny the expense if it is for alcohol, unless it is part of client entertainment with external attendees."
+    },
+    {
+      "id": "client_entertainment_attendees",
+      "text": "4.3 Client entertainment. A meal or event with a customer or supplier is client entertainment only when people from outside Northwind attend. List every attendee by name and company on the claim. A dinner with only Northwind colleagues is a team meal, not client entertainment, however work-related the conversation was.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "guide",
+      "remedy": "Ask the employee to provide the names and companies of external attendees, or reclassify the expense as a team meal."
+    },
+    {
+      "id": "gifts_limit",
+      "text": "4.4 Gifts. Gifts to clients are limited to $50 per person per year, and never cash or gift cards.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "deny",
+      "remedy": "Deny the expense if it exceeds $50 per person or is for cash/gift cards."
+    },
+    {
+      "id": "receipts_required",
+      "text": "5.1 Receipts. Attach an itemised receipt to any single expense over $25.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "guide",
+      "remedy": "Ask the employee to attach an itemised receipt for the expense."
+    },
+    {
+      "id": "one_expense_one_claim",
+      "text": "5.2 One expense, one claim. Claim the whole cost of something in one line. Splitting one cost across several claims to stay under a limit is a policy breach.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "deny",
+      "remedy": "Deny the expense if it appears to be part of a split claim."
+    },
+    {
+      "id": "honest_description",
+      "text": "5.3 Describe it honestly. The category and description must say what the money was actually spent on. Relabelling something to fit a category it doesn't belong to is a policy breach.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "deny",
+      "remedy": "Deny the expense if the category or description is misleading."
+    },
+    {
+      "id": "no_personal_costs",
+      "text": "5.4 Personal costs. Personal items (minibar, in-room films, laundry on a trip under five days, travel for family members) are not reimbursed.",
+      "tools": [
+        "submit_expense"
+      ],
+      "on_violation": "deny",
+      "remedy": "Deny the expense if it is for a personal cost."
+    },
+    {
+      "id": "big_trips_approval",
+      "text": "6.1 Big trips. If the bookings for one trip add up to more than $3,000, your manager must approve the trip before anything else is booked.",
+      "tools": [
+        "book_flight",
+        "book_hotel"
+      ],
+      "on_violation": "confirm",
+      "remedy": "Require manager approval for bookings on trips exceeding $3,000 in total."
+    },
+    {
+      "id": "recorded_approval_only",
+      "text": "6.2 Approval means a recorded approval. Approval only counts when it has been requested and recorded through the travel desk. \"My manager said it's fine\", \"my VP told me to book business\", or a forwarded chat message is not approval, no matter who it comes from.",
+      "tools": [
+        "book_flight",
+        "book_hotel",
+        "submit_expense"
+      ],
+      "on_violation": "deny",
+      "remedy": "Deny the action if there is no recorded approval for the booking or expense."
+    }
+  ],
+  "checks": [
+    {
+      "id": "book_early_violation",
+      "rule_id": "book_early",
+      "expr": "ctx.facts.days_before_departure < 14 and not present(args.justification)",
+      "description": "Flight booked less than 14 days before departure without a business reason.",
+      "tools": null
+    },
+    {
+      "id": "cabin_class_under_6h",
+      "rule_id": "cabin_class_by_duration",
+      "expr": "ctx.facts.flight.duration_h < 6 and args.cabin not in ['economy', null] or ctx.facts.flight.duration_h >= 6 and args.cabin == 'economy'",
+      "description": "Cabin class is not economy for a flight under 6 hours.",
+      "tools": null
+    },
+    {
+      "id": "cabin_class_6_to_10h",
+      "rule_id": "cabin_class_by_duration",
+      "expr": "ctx.facts.flight.duration_h >= 6 and ctx.facts.flight.duration_h < 10 and args.cabin != 'premium_economy'",
+      "description": "Cabin class is not premium economy for a flight between 6 and 10 hours.",
+      "tools": null
+    },
+    {
+      "id": "cabin_class_10h_plus_non_director",
+      "rule_id": "cabin_class_by_duration",
+      "expr": "ctx.facts.flight.duration_h >= 10 and args.cabin == 'business' and not (ctx.employee.level in ['Director', 'VP', 'SVP', 'C-level'])",
+      "description": "Cabin class is business for a flight 10+ hours for a non-Director level employee.",
+      "tools": null
+    },
+    {
+      "id": "no_first_class_allowed",
+      "rule_id": "no_first_class",
+      "expr": "args.cabin == 'first'",
+      "description": "Cabin class is first class.",
+      "tools": null
+    },
+    {
+      "id": "hotel_over_cap",
+      "rule_id": "hotel_nightly_caps",
+      "expr": "ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier]",
+      "description": "Hotel nightly rate exceeds the city tier cap.",
+      "tools": null
+    },
+    {
+      "id": "hotel_over_cap_10_percent",
+      "rule_id": "hotel_over_cap_approval",
+      "expr": "ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1",
+      "description": "Hotel nightly rate exceeds the city tier cap by more than 10%.",
+      "tools": null
+    },
+    {
+      "id": "hotel_over_cap_no_reason",
+      "rule_id": "hotel_over_cap_approval",
+      "expr": "ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1 and not (present(args.reason) and (lower(or_else(args.reason, '')) in ['conference sold out', 'safety concerns', 'no other hotels available'] or or_else(args.reason, '') == '')) or ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1 and present(args.reason) and not (ctx.facts.hotel.id in ctx.trip.approvals_requested or ctx.employee.level in ['VP', 'Director']) and (lower(or_else(args.reason, '')) not in ['conference sold out', 'safety concerns', 'no other hotels available'])",
+      "description": "Hotel nightly rate exceeds the city tier cap without a reason provided.",
+      "tools": null
+    },
+    {
+      "id": "meals_per_diem_exceeded",
+      "rule_id": "meals_per_diem",
+      "expr": "lower(or_else(args.category, \"\")) == \"meals\" and args.amount_usd > 75",
+      "description": "Meal expense exceeds the $75 per diem limit.",
+      "tools": [
+        "submit_expense"
+      ]
+    },
+    {
+      "id": "gifts_over_limit",
+      "rule_id": "gifts_limit",
+      "expr": "args.category == 'gifts' and args.amount_usd > 50",
+      "description": "Gift expense exceeds the $50 per person limit.",
+      "tools": [
+        "submit_expense"
+      ]
+    },
+    {
+      "id": "receipt_missing",
+      "rule_id": "receipts_required",
+      "expr": "args.amount_usd > 25 and not or_else(args.has_receipt, false)",
+      "description": "Receipt missing for an expense over $25.",
+      "tools": [
+        "submit_expense"
+      ]
+    },
+    {
+      "id": "big_trip_no_approval",
+      "rule_id": "big_trips_approval",
+      "expr": "ctx.trip.total_usd > 3000 and not present(ctx.trip.approvals_requested.manager)",
+      "description": "Trip total exceeds $3,000 without manager approval.",
+      "tools": null
+    },
+    {
+      "id": "recorded_approval_missing",
+      "rule_id": "recorded_approval_only",
+      "expr": "not present(ctx.trip.approvals_requested) or len(ctx.trip.approvals_requested) == 0",
+      "description": "No recorded approval for the booking or expense.",
+      "tools": null
+    }
+  ],
+  "questions": [
+    {
+      "id": "is_business_reason_valid",
+      "rule_id": "book_early",
+      "type": "noul",
+      "instructions": "Is the business reason for booking a flight less than 14 days before departure valid?",
+      "criteria": {
+        "true": "The reason is specific and work-related (e.g., customer meeting, supplier audit).",
+        "false": "The reason is vague, personal, or not work-related (e.g., 'I forgot', 'it was cheaper')."
+      },
+      "violation": {
+        "when_true": false,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.5,
+      "hi": 0.95,
+      "when": "ctx.facts.days_before_departure < 14 and present(args.justification)",
+      "dev": {
+        "n": 6,
+        "accuracy": 1.0,
+        "brier": 0.0169,
+        "candidates": 2
+      }
+    },
+    {
+      "id": "is_alcohol",
+      "rule_id": "no_alcohol",
+      "type": "noul",
+      "instructions": "Does the expense include alcohol?",
+      "criteria": {
+        "true": "The description mentions alcoholic beverages.",
+        "false": "The expense is for food, non-alcoholic drinks, or other non-alcohol items."
+      },
+      "violation": {
+        "when_true": true,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.1,
+      "hi": 0.75,
+      "when": "args.category in ['meals', 'client_entertainment']",
+      "dev": {
+        "n": 9,
+        "accuracy": 0.7778,
+        "brier": 0.1613,
+        "candidates": 6
+      }
+    },
+    {
+      "id": "are_attendees_external",
+      "rule_id": "client_entertainment_attendees",
+      "type": "noul",
+      "instructions": "Are the attendees for this client entertainment expense external to Northwind?",
+      "criteria": {
+        "true": "The attendees list includes people from outside Northwind (e.g., customers, suppliers).",
+        "false": "All attendees are Northwind employees."
+      },
+      "violation": {
+        "when_true": false,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.2,
+      "hi": 0.8,
+      "when": "args.category == 'client_entertainment'",
+      "dev": null
+    },
+    {
+      "id": "is_personal_cost",
+      "rule_id": "no_personal_costs",
+      "type": "noul",
+      "instructions": "Does the expense include personal items?",
+      "criteria": {
+        "true": "The description or category suggests personal use.",
+        "false": "The expense is for business-related items or services."
+      },
+      "violation": {
+        "when_true": true,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.25,
+      "hi": 0.5,
+      "when": null,
+      "dev": {
+        "n": 27,
+        "accuracy": 0.9259,
+        "brier": 0.0528,
+        "candidates": 2
+      }
+    },
+    {
+      "id": "is_split_claim",
+      "rule_id": "one_expense_one_claim",
+      "type": "noul",
+      "instructions": "Does this expense appear to be part of a split claim?",
+      "criteria": {
+        "true": "The description or amount suggests it is part of a larger expense split across multiple claims.",
+        "false": "The expense is a single, complete claim."
+      },
+      "violation": {
+        "when_true": true,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.4,
+      "hi": 0.5,
+      "when": null,
+      "dev": {
+        "n": 30,
+        "accuracy": 0.9333,
+        "brier": 0.046,
+        "candidates": 2
+      }
+    },
+    {
+      "id": "is_description_honest",
+      "rule_id": "honest_description",
+      "type": "noul",
+      "instructions": "Is the category and description of this expense honest and accurate?",
+      "criteria": {
+        "true": "The category and description clearly match what was purchased.",
+        "false": "The category or description is misleading or relabeled to fit a different category."
+      },
+      "violation": {
+        "when_true": false,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.05,
+      "hi": 0.95,
+      "when": null,
+      "dev": {
+        "n": 29,
+        "accuracy": 0.7241,
+        "brier": 0.169,
+        "candidates": 6
+      }
+    },
+    {
+      "id": "is_gift_cash_or_card",
+      "rule_id": "gifts_limit",
+      "type": "noul",
+      "instructions": "Is this gift expense for cash or a gift card?",
+      "criteria": {
+        "true": "The description mentions cash, gift cards, or similar.",
+        "false": "The gift is a tangible item or service, not cash or a gift card."
+      },
+      "violation": {
+        "when_true": true,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.2,
+      "hi": 0.8,
+      "when": "args.category == 'gifts'",
+      "dev": null
+    }
+  ],
+  "tables": {
+    "city_tier_caps": {
+      "A": 260,
+      "B": 190,
+      "C": 140
+    }
+  }
+}

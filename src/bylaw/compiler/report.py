@@ -32,6 +32,11 @@ def render_report(pack: Pack, warnings: list[str]) -> str:
                 lines += [f"  Dev cases: {q.dev.n}, accuracy {q.dev.accuracy:.2f}, Brier {q.dev.brier:.3f}, "
                           f"best of {q.dev.candidates} wordings."]
         lines.append("")
+    if pack.unenforced:
+        lines += ["## Not enforced automatically", "",
+                  "These parts of the policy had a check or question that failed its own practice cases, so the "
+                  "compiler pulled it. A person has to watch for them.", ""]
+        lines += [f"- `{rule_id}`: {why}" for rule_id, why in pack.unenforced.items()] + [""]
     lines += ["## Warnings", ""] + ([f"- {w}" for w in warnings] or ["None."]) + [""]
     lines += ["Dev-case numbers tune the pack; they are not the benchmark. See bench/ for held-out results.", ""]
     return "\n".join(lines)
