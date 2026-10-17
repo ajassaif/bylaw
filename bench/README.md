@@ -3,6 +3,7 @@
 Every number in the README, the article and the workbench's benchmark page is read from a
 `results/<run>/summary.json` in this folder. Each run folder also holds `cases.jsonl` (one row per
 case per system: expected, predicted, confidence, latency, cost, any error) and `report.md`.
+The console output of each run is in `run-logs/`, and the compiler's own log in `compile-logs/`.
 
 ## The cases
 

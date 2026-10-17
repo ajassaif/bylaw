@@ -29,7 +29,25 @@ that decided it lights up in the margin of the document.
 ## Results
 
 <!-- bench:start -->
-Results land here from `bench/results/*/summary.json` (`python -m scripts.bench_table`).
+**Compiled pack (bc0fbcc69588), Bedrock judges as baselines**
+
+| System | Right verdict (95% CI) | Let a breach through | Held against manipulation | Calibration error | p50 | p95 | $ per 1,000 | No answer |
+|---|---|---|---|---|---|---|---|---|
+| Bylaw, Decider alone | 44.7% (37.6–51.8%) | 7.1% | 28.0% | 0.273 | 1.9 s | 2.9 s | $0.414 | 0 |
+| Bylaw, Bedrock when unsure | 58.4% (51.8–65.5%) | 7.1% | 36.0% | 0.256 | 2.0 s | 3.7 s | $0.655 | 0 |
+| Amazon Nova Pro alone | 53.8% (46.7–60.9%) | 8.0% | 32.0% | 0.408 | 772 ms | 1.3 s | $1.524 | 0 |
+| Amazon Nova Lite alone | 51.3% (44.7–58.4%) | 14.2% | 24.0% | 0.421 | 637 ms | 940 ms | $0.114 | 3 |
+| Mistral Large 3 alone | 40.1% (33.0–47.2%) | 7.1% | 34.0% | 0.592 | 822 ms | 2.7 s | $0.994 | 0 |
+
+197 held-out cases (50 of them try to talk the agent past a rule), pack `bc0fbcc69588`. Decider on cpu, c7i.4xlarge (CPU). Full per-case rows are in the same results folder.
+
+**Hand-written pack, same cases, Decider only**
+
+| System | Right verdict (95% CI) | Let a breach through | Held against manipulation | Calibration error | p50 | p95 | $ per 1,000 | No answer |
+|---|---|---|---|---|---|---|---|---|
+| Bylaw, Decider alone | 60.4% (53.8–67.0%) | 0.0% | 76.0% | 0.098 | 1.5 s | 2.9 s | $0.296 | 0 |
+
+197 held-out cases (50 of them try to talk the agent past a rule), pack `7cfa2e9b1cd0`. Decider on cpu, c7i.4xlarge (CPU). Full per-case rows are in the same results folder.
 <!-- bench:end -->
 
 Every number above is produced by `bylaw bench` and nothing else. How the cases were made:
@@ -42,6 +60,27 @@ Every number above is produced by `bylaw bench` and nothing else. How the cases 
   expense description).
 - **Baselines** are Bedrock models given the whole policy and the same rendered state, asked for a
   verdict and a confidence as JSON. A model that never produced usable JSON is counted as wrong.
+
+### What the numbers say
+
+The hand-written pack is the case for the pattern. It let none of the 113 breaches through and
+held against 38 of the 50 manipulation attempts, where the Bedrock models alone held against 12 to
+17. Its weakness is caution: it sent 63 of the 84 clean cases to a person for sign-off, because a
+Decider answer that lands in the uncertain band goes to a person by design.
+
+The compiled pack doesn't reach it yet. Alone, it is right on 44.7% of cases, below Nova Pro
+alone. Most of the gap comes from two compiler mistakes, both visible in `packs/northwind.pack.md`:
+
+- it marked the cabin rule and the recorded-approval rule as *refuse* instead of *send back*, so
+  30 of the 78 fixable breaches were refused outright;
+- it quarantined the $3,000 trip check for flights after that check failed its practice cases, so
+  6 of the 8 breaches it let through are large flight bookings with no approval.
+
+Escalating unsure answers to Nova Pro lifts the compiled pack to 58.4%, but that interval
+overlaps Nova Pro alone. On this run I'd call those two a tie.
+
+These runs used a CPU instance. Bedrock answered faster than the Decider on CPU, so this run says
+nothing about speed; a GPU run would.
 
 ## Run it
 

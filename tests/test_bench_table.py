@@ -7,18 +7,31 @@ def summary():
     return {"n_cases": 2, "pack_hash": "abc", "env": {"instance": "c7i.4xlarge", "decider": {"device": "cpu"}},
             "systems": {
                 "bylaw": {"accuracy": 0.9, "accuracy_ci": [0.8, 0.97], "false_proceed": 0.0, "ece": 0.05,
-                          "latency": {"p50": 900.0, "p95": 2100.0}, "usd_per_1k": 0.2, "abstains": 0},
+                          "latency": {"p50": 900.0, "p95": 2100.0}, "usd_per_1k": 0.2, "abstains": 0,
+                          "manipulation_accuracy": 0.76, "manipulation_n": 50},
                 "llm:us.anthropic.claude-opus-4-6-v1": {"accuracy": 0.85, "accuracy_ci": [0.7, 0.93],
                                                         "false_proceed": 0.1, "ece": 0.12,
                                                         "latency": {"p50": 4100.0, "p95": 9800.0},
-                                                        "usd_per_1k": 21.5, "abstains": 1}}}
+                                                        "usd_per_1k": 21.5, "abstains": 1,
+                                                        "manipulation_accuracy": 0.32, "manipulation_n": 50}}}
 
 
 def test_table_rows_come_from_summary():
     md = table(summary())
-    assert "| Bylaw, Decider alone | 90.0% (80.0–97.0%) | 0.0% | 0.050 | 900 ms | 2.1 s | $0.200 | 0 |" in md
-    assert "| Claude Opus 4.6 alone | 85.0% (70.0–93.0%) | 10.0% | 0.120 | 4.1 s | 9.8 s | $21.500 | 1 |" in md
-    assert "c7i.4xlarge" in md and "cpu" in md
+    assert "| Bylaw, Decider alone | 90.0% (80.0–97.0%) | 0.0% | 76.0% | 0.050 | 900 ms | 2.1 s | $0.200 | 0 |" in md
+    assert "| Claude Opus 4.6 alone | 85.0% (70.0–93.0%) | 10.0% | 32.0% | 0.120 | 4.1 s | 9.8 s | $21.500 | 1 |" in md
+    assert "c7i.4xlarge" in md and "cpu" in md and "50 of them try to talk" in md
+
+
+def test_fill_readme_takes_several_titled_summaries(tmp_path):
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    a.write_text(json.dumps(summary()))
+    s2 = summary()
+    s2["pack_hash"] = "def"
+    b.write_text(json.dumps(s2))
+    readme = "<!-- bench:start -->\nold\n<!-- bench:end -->\n"
+    out = fill_readme(readme, (a, "Compiled pack"), (b, "Hand-written pack"))
+    assert out.index("**Compiled pack**") < out.index("pack `abc`") < out.index("**Hand-written pack**") < out.index("pack `def`")
 
 
 def test_fill_readme_replaces_between_markers(tmp_path):
@@ -27,3 +40,8 @@ def test_fill_readme_replaces_between_markers(tmp_path):
     readme = "intro\n<!-- bench:start -->\nold\n<!-- bench:end -->\noutro\n"
     out = fill_readme(readme, p)
     assert "\nold\n" not in out and out.startswith("intro\n<!-- bench:start -->\n") and out.endswith("<!-- bench:end -->\noutro\n")
+
+
+def test_mistral_large_gets_a_readable_name():
+    from scripts.bake_sleeping import system_name
+    assert system_name("llm:mistral.mistral-large-3-675b-instruct") == "Mistral Large 3 alone"

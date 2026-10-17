@@ -36,6 +36,7 @@ describe("systemName", () => {
     expect(systemName("bylaw+hybrid")).toBe("Bylaw, Bedrock when unsure");
     expect(systemName("llm:us.anthropic.claude-haiku-4-5-20251001-v1:0")).toBe("Claude Haiku 4.5 alone");
     expect(systemName("llm:us.amazon.nova-pro-v1:0")).toBe("Amazon Nova Pro alone");
+    expect(systemName("llm:mistral.mistral-large-3-675b-instruct")).toBe("Mistral Large 3 alone");
     expect(systemName("llm:us.meta.llama3-3-70b-instruct-v1:0")).toBe("meta.llama3-3-70b-instruct alone");
   });
 });

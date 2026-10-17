@@ -29,6 +29,7 @@ export function clauseOf(text: string): string | null {
 const FAMILIES: [RegExp, (m: RegExpMatchArray) => string][] = [
   [/claude-(haiku|sonnet|opus)-(\d+)-(\d+)/, (m) => `Claude ${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}.${m[3]}`],
   [/nova-(pro|lite|micro|premier)/, (m) => `Amazon Nova ${m[1][0].toUpperCase()}${m[1].slice(1)}`],
+  [/mistral-large-(\d+)/, (m) => `Mistral Large ${m[1]}`],
 ];
 
 export function systemName(system: string): string {

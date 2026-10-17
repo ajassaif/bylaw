@@ -14,7 +14,8 @@ import re
 from pathlib import Path
 
 NAMES = [(r"claude-(haiku|sonnet|opus)-(\d+)-(\d+)", lambda m: f"Claude {m[1].title()} {m[2]}.{m[3]}"),
-         (r"nova-(pro|lite|micro|premier)", lambda m: f"Amazon Nova {m[1].title()}")]
+         (r"nova-(pro|lite|micro|premier)", lambda m: f"Amazon Nova {m[1].title()}"),
+         (r"mistral-large-(\d+)", lambda m: f"Mistral Large {m[1]}")]
 
 
 def system_name(system: str) -> str:
