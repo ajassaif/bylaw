@@ -73,3 +73,11 @@ def test_question_violation_mismatch_dropped():
     draft = extract_draft("POLICY", llm, "m", TOOLS)
     assert draft.questions == []
     assert any("is_alcohol" in w for w in draft.warnings)
+
+
+def test_rule_with_no_tools_dropped():
+    bad = draft_json(tools=())
+    llm = FakeLLM({"m": [bad, bad]})
+    draft = extract_draft("POLICY", llm, "m", TOOLS)
+    assert "hotel_cap" not in [r.id for r in draft.rules]
+    assert any("names no tools" in w for w in draft.warnings)

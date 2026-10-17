@@ -98,7 +98,9 @@ def _errors(d: DraftOut, tools: dict[str, str]) -> dict[str, str]:
     rule_ids = set()
     for r in d.rules:
         unknown = [t for t in r.tools if t not in tools]
-        if unknown:
+        if not r.tools:
+            errors[r.id] = f"rule {r.id} names no tools, so nothing could enforce it"
+        elif unknown:
             errors[r.id] = f"rule {r.id} names unknown tools {unknown}; allowed: {sorted(tools)}"
         else:
             rule_ids.add(r.id)
