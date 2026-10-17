@@ -114,6 +114,7 @@ def serve(
     model: str = typer.Option(config.AGENT_MODEL),
     hybrid_model: str = typer.Option("", help="Escalate uncertain calls to this Bedrock model; empty = ask a person."),
     region: str = typer.Option(config.REGION),
+    scripted: bool = typer.Option(False, help="No-LLM desk for previews: fixed demo requests, real gate and Decider."),
 ) -> None:
     """Serve the workbench UI and the gated travel desk. Passcode from BYLAW_DEMO_PASS."""
     import os
@@ -132,11 +133,19 @@ def serve(
     escalator = LLMJudge(BedrockLLM(region), hybrid_model, policy.read_text(encoding="utf-8")) if hybrid_model else None
 
     def factory(session, on_receipt):
+        if scripted:
+            from bylaw.agent.scripted import ScriptedDesk
+
+            return ScriptedDesk(loaded, decider, session, on_receipt, escalator=escalator)
         return build_desk(loaded, decider, session, model, escalator=escalator, on_receipt=on_receipt, region=region)
+
+    def text_of(result) -> str:
+        text = getattr(result, "text", None)
+        return text if isinstance(text, str) else str(result)
 
     results.mkdir(parents=True, exist_ok=True)
     api = create_app(pack, policy, results, decider, factory, passcode=os.environ.get("BYLAW_DEMO_PASS"),
-                     web_dir=web, model_id=model)
+                     web_dir=web, model_id="scripted (no language model)" if scripted else model, text_of=text_of)
     uvicorn.run(api, host=host, port=port, log_level="info")
 
 
