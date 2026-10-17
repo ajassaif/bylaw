@@ -8,7 +8,8 @@
       "Resource": [
         "arn:aws:bedrock:*::foundation-model/anthropic.claude-*",
         "arn:aws:bedrock:*::foundation-model/amazon.nova-*",
-        "arn:aws:bedrock:*::foundation-model/meta.llama*",
+        "arn:aws:bedrock:*::foundation-model/mistral.mistral-large-3-675b-instruct",
+        "arn:aws:bedrock:*::foundation-model/deepseek.v3.2",
         "arn:aws:bedrock:__REGION__:__ACCOUNT__:inference-profile/us.anthropic.claude-*",
         "arn:aws:bedrock:__REGION__:__ACCOUNT__:inference-profile/us.amazon.nova-*",
         "arn:aws:bedrock:__REGION__:__ACCOUNT__:inference-profile/us.meta.llama*"

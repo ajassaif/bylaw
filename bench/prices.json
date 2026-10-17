@@ -3,12 +3,15 @@
   "source": "AWS Price List API (service codes AmazonEC2, AmazonBedrock, AmazonBedrockFoundationModels), region us-east-1, on-demand. Claude prices are the regional (us.*) inference-profile rates, which is what Bylaw calls.",
   "gpu_instance": "g6.xlarge",
   "gpu_usd_per_hour": 0.8048,
+  "cpu_instance": "c7i.4xlarge",
+  "cpu_usd_per_hour": 0.714,
   "models": {
     "us.anthropic.claude-haiku-4-5-20251001-v1:0": [1.10, 5.50],
     "us.anthropic.claude-sonnet-4-6": [3.30, 16.50],
     "us.anthropic.claude-opus-4-6-v1": [5.50, 27.50],
     "us.amazon.nova-pro-v1:0": [0.80, 3.20],
     "us.amazon.nova-lite-v1:0": [0.06, 0.24],
-    "mistral.mistral-large-3-675b-instruct": [0.50, 1.50]
+    "mistral.mistral-large-3-675b-instruct": [0.50, 1.50],
+    "deepseek.v3.2": [0.62, 1.85]
   }
 }
