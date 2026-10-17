@@ -32,7 +32,7 @@ export function Desk({ employees, scripted, onReceipt, onShowClause }: {
   const [draft, setDraft] = useState(askFromUrl);
   const [busy, setBusy] = useState(false);
   const [pack, setPack] = useState<Pack | null>(null);
-  const end = useRef<HTMLDivElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     get<Pack>("/api/pack").then(setPack).catch(() => setPack(null));
@@ -48,7 +48,10 @@ export function Desk({ employees, scripted, onReceipt, onShowClause }: {
     return () => { live = false; };
   }, [employee]);
 
-  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [log]);
+  useEffect(() => {
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [log]);
 
   const ruleText = useCallback((id: string) => pack?.rules.find((r) => r.id === id)?.text ?? "", [pack]);
 
@@ -113,7 +116,7 @@ export function Desk({ employees, scripted, onReceipt, onShowClause }: {
         ))}
       </div>
 
-      <div className="log" aria-live="polite">
+      <div className="log" aria-live="polite" ref={logRef}>
         {log.length === 0 && <p className="empty">Ask for a flight, a hotel or an expense. Each booking goes past the policy check before it runs, and the check's result shows up here.</p>}
         {log.map((e, i) => {
           if (e.kind === "receipt") return <ReceiptCard key={i} receipt={e.receipt} ruleText={ruleText} onShowClause={onShowClause} />;
@@ -134,7 +137,6 @@ export function Desk({ employees, scripted, onReceipt, onShowClause }: {
           return <p key={i} className={`msg ${e.kind}`}>{e.text}</p>;
         })}
         {busy && <p className="msg assistant" aria-busy="true">Working on it…</p>}
-        <div ref={end} />
       </div>
 
       <form className="composer" onSubmit={(ev) => { ev.preventDefault(); send(draft); }}>

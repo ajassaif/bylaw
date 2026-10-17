@@ -28,7 +28,7 @@ function BarChart({ rows, value, ci, format, log = false, caption, note }: {
   const vals = shown.map((r) => value(r.s)!);
   const max = Math.max(...vals, ...(ci ? shown.map((r) => ci(r.s)[1]) : []), log ? 1 : 0.0001);
   const min = log ? Math.max(Math.min(...vals) / 2, 1e-4) : 0;
-  const W = 520, label = 190, rowH = 30, H = shown.length * rowH + 24;
+  const W = 460, label = 170, rowH = 30, H = shown.length * rowH + 24;
   const x = (v: number) => label + (log ? (Math.log10(Math.max(v, min)) - Math.log10(min)) / (Math.log10(max) - Math.log10(min) || 1) : v / max) * (W - label - 60);
 
   return (
@@ -65,7 +65,7 @@ function BarChart({ rows, value, ci, format, log = false, caption, note }: {
 
 function RiskCoverage({ rows }: { rows: Row[] }) {
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null);
-  const W = 520, H = 300, L = 44, B = 32, T = 10, R = 150;
+  const W = 460, H = 300, L = 44, B = 32, T = 10, R = 130;
   const px = (c: number) => L + c * (W - L - R);
   const lo = Math.min(...rows.flatMap((r) => r.s.risk_coverage.map(([, a]) => a)), 0.5);
   const py = (a: number) => T + (1 - (a - lo) / (1 - lo || 1)) * (H - T - B);
@@ -130,7 +130,7 @@ export function Bench() {
 
   return (
     <main className="bench">
-      <h1>{data.n_cases} held-out cases, decided by Bylaw and by Bedrock models reading the policy</h1>
+      <h1>{data.n_cases} held-out cases, decided by Bylaw{hasLlms ? " and by Bedrock models reading the policy" : ""}</h1>
       <p className="lede">
         Every system saw the same rendered state for each case. None of these cases were used to tune the pack. A model that never
         produced a usable answer is counted as wrong.
@@ -163,7 +163,7 @@ export function Bench() {
       )}
 
       <h2>How they compare</h2>
-      <p className="legend"><span className="swatch" style={{ background: OURS }} /> Bylaw <span className="swatch" style={{ background: THEIRS }} /> a Bedrock model deciding alone</p>
+      {hasLlms && <p className="legend"><span className="swatch" style={{ background: OURS }} /> Bylaw <span className="swatch" style={{ background: THEIRS }} /> a Bedrock model deciding alone</p>}
       <div className="charts">
         <BarChart rows={rows} value={(s) => s.accuracy} ci={(s) => s.accuracy_ci} format={pct} caption="Right verdict"
                   note="Share of cases where the system chose the action the policy requires. Lines show the 95% bootstrap interval." />
@@ -171,9 +171,9 @@ export function Bench() {
                   note="Of the cases that should have been stopped, the share that would have gone ahead anyway. Lower is better." />
         <BarChart rows={rows} value={(s) => s.latency.p50} format={(v) => ms(v)} log caption="Time to decide, median"
                   note="Per decision. Log scale. Bylaw's time is the Decider call plus the code checks." />
-        <BarChart rows={rows.filter((r) => r.s.usd_per_1k > 0)} value={(s) => s.usd_per_1k} format={(v) => `$${v.toFixed(3)}`} log
+        {rows.some((r) => r.s.usd_per_1k > 0) && <BarChart rows={rows.filter((r) => r.s.usd_per_1k > 0)} value={(s) => s.usd_per_1k} format={(v) => `$${v.toFixed(3)}`} log
                   caption="Cost per 1,000 decisions"
-                  note="Bedrock at on-demand token prices; Bylaw at the GPU instance's hourly price spread over measured decision time." />
+                  note="Bedrock at on-demand token prices; Bylaw at the GPU instance's hourly price spread over measured decision time." />}
         {rows.some((r) => r.s.risk_coverage.length) && <RiskCoverage rows={rows} />}
       </div>
 

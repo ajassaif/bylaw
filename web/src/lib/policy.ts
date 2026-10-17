@@ -32,12 +32,13 @@ export function parsePolicy(md: string): PolicyDoc {
       const table = { head: cells(lines[0]), rows: lines.slice(1).map(cells) };
       section?.clauses.at(-1)?.tables.push(table);
     } else if (section) {
-      const m = block.match(CLAUSE);
+      const text = block.replace(/\s*\n\s*/g, " ");
+      const m = text.match(CLAUSE);
       if (m) section.clauses.push({ id: m[1], title: m[2].trim(), body: m[3] ? [m[3]] : [], tables: [] });
-      else if (section.clauses.length) section.clauses.at(-1)!.body.push(block);
-      else section.notes.push(block);
+      else if (section.clauses.length) section.clauses.at(-1)!.body.push(text);
+      else section.notes.push(text);
     } else {
-      doc.preamble.push(block);
+      doc.preamble.push(block.replace(/\s*\n\s*/g, " "));
     }
   }
   return doc;
