@@ -18,10 +18,10 @@ In the Bedrock console for the chosen region (default `us-east-1`), request acce
 
 | Role | Default model (check the console for the exact ID) |
 |---|---|
-| Travel-desk agent, hybrid fallback | Claude Haiku 4.5 |
-| Compiler and dev-case writer | Claude Sonnet 4.5 or newer |
-| Held-out case writer (a different family) | Amazon Nova Pro |
-| Baselines | Claude Haiku, Claude Sonnet, Nova Pro, Nova Lite |
+| Travel-desk agent, hybrid fallback | Amazon Nova Pro |
+| Compiler and dev-case writer | Mistral Large 3 |
+| Held-out case writer (a different family) | DeepSeek V3.2 |
+| Baselines | Nova Pro, Nova Lite, Mistral Large 3 (plus Claude Haiku, Sonnet and Opus once the account's Anthropic access opens) |
 
 Record the exact model or inference-profile IDs in `src/bylaw/config.py` (or set `BYLAW_*`
 variables in `/etc/bylaw.env`) and the on-demand prices in `bench/prices.json`, with the date

@@ -26,7 +26,7 @@ nothing suitable is available, with your manager's approval. Two things are tang
 there. Whether $205 is within 10% of $190 is arithmetic. Whether "the summit hotels are sold out"
 is a real reason, rather than "I like the pool", is a judgement.
 
-Bylaw's compiler reads the policy with Claude Sonnet 4.6 on Bedrock and splits every clause that
+Bylaw's compiler reads the policy with Mistral Large 3 on Bedrock and splits every clause that
 way. Arithmetic, dates, levels and categories become checks: short expressions like
 
 ```
@@ -40,7 +40,7 @@ named options and a description of each side, which is the part Decider is good 
 ## Then it tests its own questions
 
 A typed question is a program, and wording is most of its behaviour. So the compiler doesn't
-stop at writing questions. It asks Claude for practice cases per rule: compliant ones, clear
+stop at writing questions. It asks Mistral for practice cases per rule: compliant ones, clear
 breaches, borderline ones, and people trying to talk their way past the rule. It sends every
 wording of every question to Decider in one request per case (the state is encoded once and
 shared, so trying three wordings costs about the same as one), keeps the wording with the lowest
@@ -81,7 +81,7 @@ interval, then latency and cost per 1,000 decisions. Say plainly where a baselin
 |---|---|---|---|---|
 | {{rows from summary.json}} | | | | |
 
-The held-out cases were written by Mistral Large 3 from the policy text alone. It never saw the
+The held-out cases were written by DeepSeek V3.2 from the policy text alone. It never saw the
 pack, and it isn't the family that compiled the pack or any baseline. I checked every label by
 hand. Another 45 cases I wrote myself, 12 of them attempts to get around a rule: verbal approvals
 that were never recorded, a team dinner relabelled as client entertainment, an expense

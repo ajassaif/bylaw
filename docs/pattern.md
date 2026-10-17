@@ -94,7 +94,7 @@ strands-decider serve StrandsAgents/strands-decider-2B-qwen3.5-v1-2610 --port 80
 bylaw compile your-policy.md --out packs/yours.pack.json --dev-out data/dev/yours.jsonl
 ```
 
-The compiler needs Bedrock access (it reads the policy with Claude Sonnet and writes practice
+The compiler needs Bedrock access (it reads the policy with Mistral Large 3 and writes practice
 cases). Tell it about your tools by editing `TOOL_DESCRIPTIONS` in `src/bylaw/agent/tools.py`,
 including which looked-up facts a check may read. Read `packs/yours.pack.md` before you trust the
 pack: it lists every rule, how it is enforced, how each question did on practice cases, and what

@@ -34,8 +34,8 @@ Results land here from `bench/results/*/summary.json` (`python -m scripts.bench_
 
 Every number above is produced by `bylaw bench` and nothing else. How the cases were made:
 
-- **Held-out cases** were written by Mistral Large 3 from the policy text alone. It never saw the
-  compiled pack. It is a different family from the Claude model that compiled the pack and wrote
+- **Held-out cases** were written by DeepSeek V3.2 from the policy text alone. It never saw the
+  compiled pack. It is a different family from Mistral Large 3, which compiled the pack and wrote
   its practice cases, and from every baseline. I reviewed every label by hand against the policy.
 - **Hand-written cases**: 45 more, including 12 that try to talk the agent past a rule (fake
   verbal approvals, a team dinner relabelled as client entertainment, instructions hidden in an
