@@ -111,6 +111,7 @@ def serve(
     host: str = typer.Option("127.0.0.1"),
     port: int = typer.Option(8080),
     decider_url: str = typer.Option(config.DECIDER_URL),
+    decider_timeout: float = typer.Option(30.0, help="Seconds to wait for the Decider; raise it for a CPU Decider."),
     model: str = typer.Option(config.AGENT_MODEL),
     hybrid_model: str = typer.Option("", help="Escalate uncertain calls to this Bedrock model; empty = ask a person."),
     region: str = typer.Option(config.REGION),
@@ -129,7 +130,7 @@ def serve(
     from bylaw.pack import load_pack
 
     loaded = load_pack(pack)
-    decider = DeciderClient(decider_url)
+    decider = DeciderClient(decider_url, timeout=decider_timeout)
     escalator = LLMJudge(BedrockLLM(region), hybrid_model, policy.read_text(encoding="utf-8")) if hybrid_model else None
 
     def factory(session, on_receipt):
