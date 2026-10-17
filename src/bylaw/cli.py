@@ -102,5 +102,43 @@ def bench(
     typer.echo(f"{summary['n_cases']} cases scored; results in {out}")
 
 
+@app.command()
+def serve(
+    pack: Path = typer.Option(Path("packs/northwind.pack.json"), exists=True),
+    policy: Path = typer.Option(Path("policies/northwind-travel.md"), exists=True),
+    results: Path = typer.Option(Path("bench/results")),
+    web: Path = typer.Option(Path("web/dist")),
+    host: str = typer.Option("127.0.0.1"),
+    port: int = typer.Option(8080),
+    decider_url: str = typer.Option(config.DECIDER_URL),
+    model: str = typer.Option(config.AGENT_MODEL),
+    hybrid_model: str = typer.Option("", help="Escalate uncertain calls to this Bedrock model; empty = ask a person."),
+    region: str = typer.Option(config.REGION),
+) -> None:
+    """Serve the workbench UI and the gated travel desk. Passcode from BYLAW_DEMO_PASS."""
+    import os
+
+    import uvicorn
+
+    from bylaw.agent.desk import build_desk
+    from bylaw.api.app import create_app
+    from bylaw.decider import DeciderClient
+    from bylaw.judge import LLMJudge
+    from bylaw.llm import BedrockLLM
+    from bylaw.pack import load_pack
+
+    loaded = load_pack(pack)
+    decider = DeciderClient(decider_url)
+    escalator = LLMJudge(BedrockLLM(region), hybrid_model, policy.read_text(encoding="utf-8")) if hybrid_model else None
+
+    def factory(session, on_receipt):
+        return build_desk(loaded, decider, session, model, escalator=escalator, on_receipt=on_receipt, region=region)
+
+    results.mkdir(parents=True, exist_ok=True)
+    api = create_app(pack, policy, results, decider, factory, passcode=os.environ.get("BYLAW_DEMO_PASS"),
+                     web_dir=web, model_id=model)
+    uvicorn.run(api, host=host, port=port, log_level="info")
+
+
 if __name__ == "__main__":
     app()
