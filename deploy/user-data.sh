@@ -25,7 +25,8 @@ if [ "$DEVICE" = "cuda" ]; then
   uv pip install --python .venv "flash-linear-attention>=0.5" || true
   uv pip install --python .venv causal-conv1d --no-build-isolation || true
 fi
-chown -R bylaw:bylaw /opt/bylaw /opt/uv-python
+chown -R bylaw:bylaw /opt/bylaw
+[ -d /opt/uv-python ] && chown -R bylaw:bylaw /opt/uv-python
 
 if [ ! -f /etc/bylaw.env ]; then
   umask 077
