@@ -58,7 +58,7 @@ def make_heldout(
     from bylaw.cases import save_cases
     from bylaw.llm import BedrockLLM
 
-    if model.split(".")[1:2] == config.CASE_MODEL.split(".")[1:2]:
+    if config.family(model) == config.family(config.CASE_MODEL):
         raise typer.BadParameter(f"{model} is the same family as the dev-case model {config.CASE_MODEL}")
     cases = generate_heldout(policy.read_text(encoding="utf-8"), BedrockLLM(region), model, n)
     save_cases(cases, out)
