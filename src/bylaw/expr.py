@@ -19,6 +19,8 @@ from datetime import date
 from typing import Any
 
 ROOTS = frozenset({"args", "ctx", "tables"})
+# JSON spellings models often write in place of Python's True/False/None.
+ALIASES = {"true": True, "false": False, "null": None}
 
 
 class ExprError(ValueError):
@@ -103,7 +105,7 @@ def _check(node: ast.AST) -> None:
     match node:
         case ast.Constant(value=v) if v is None or isinstance(v, bool | int | float | str):
             return
-        case ast.Name(id=name) if name in ROOTS:
+        case ast.Name(id=name) if name in ROOTS or name in ALIASES:
             return
         case ast.Attribute(value=value, attr=attr) if not attr.startswith("_"):
             _check(value)
@@ -148,6 +150,8 @@ def _eval(node: ast.AST, env: Mapping[str, Any]) -> Any:
     match node:
         case ast.Constant(value=v):
             return v
+        case ast.Name(id=name) if name in ALIASES:
+            return ALIASES[name]
         case ast.Name(id=name):
             return _key(env, name)
         case ast.Attribute(value=value, attr=attr):

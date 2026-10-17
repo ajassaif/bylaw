@@ -53,7 +53,8 @@ def test_hybrid_escalates_uncertain(tmp_path):
 
 
 def test_heldout_prompt_excludes_pack():
-    out = json.dumps({"cases": [{"employee_id": "maya", "tool": "submit_expense", "args": {"amount_usd": 12},
+    out = json.dumps({"cases": [{"employee_id": "maya", "tool": "submit_expense", "args": {"category": "meals", "amount_usd": 12, "date": "2026-11-04",
+                                 "description": "coffee"},
                                  "conversation": [["user", "coffee"]], "expected": "proceed", "tags": ["compliant"]}]})
     llm = FakeLLM({"nova": [out, out]})
     cases = generate_heldout("THE POLICY TEXT", llm, "nova", n=2, batch=1)

@@ -127,3 +127,37 @@ def make_tools(session: Session) -> list:
         return f"Approval request sent to {approver}. Status: pending."
 
     return [search_flights, book_flight, search_hotels, book_hotel, submit_expense, request_approval]
+
+
+def _schemas() -> dict[str, dict]:
+    from bylaw.agent.session import Session
+
+    return {t.tool_name: t.tool_spec["inputSchema"]["json"] for t in make_tools(Session("maya"))}
+
+
+# The tools' own input schemas, as Strands sends them to the model. Generated cases are checked
+# against these so a case never uses an argument name the live agent couldn't send.
+TOOL_SCHEMAS: dict[str, dict] = _schemas()
+
+
+def args_problem(tool: str, args: dict) -> str | None:
+    """None when `args` fits the tool's schema, else what's wrong."""
+    schema = TOOL_SCHEMAS.get(tool)
+    if schema is None:
+        return f"unknown tool {tool}"
+    props, required = schema.get("properties", {}), schema.get("required", [])
+    unknown = [k for k in args if k not in props]
+    missing = [k for k in required if k not in args]
+    problems = ([f"unknown argument {', '.join(unknown)}"] if unknown else []) +                ([f"missing {', '.join(missing)}"] if missing else [])
+    return "; ".join(problems) or None
+
+
+def signatures() -> str:
+    """One line per tool with exact argument names and types; optional ones end in '?'."""
+    lines = []
+    for name, schema in TOOL_SCHEMAS.items():
+        required = set(schema.get("required", []))
+        params = ", ".join(f"{k}{'' if k in required else '?'}: {v.get('type', 'any')}"
+                           for k, v in schema.get("properties", {}).items())
+        lines.append(f"{name}({params})")
+    return "\n".join(lines)

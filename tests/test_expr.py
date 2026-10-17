@@ -75,3 +75,10 @@ def test_present_or_else_count_where():
     assert evaluate("or_else(args.missing, 0) + 5 == 5", e) is True
     assert evaluate("count_where(ctx.trip.approvals_requested, 'status', 'approved') == 1", e) is True
     assert evaluate("count_where(args.reason, 'status', 'approved') == 0", e) is None
+
+
+def test_json_style_literals_are_accepted():
+    e = env(args={"has_receipt": False, "x": None})
+    assert evaluate("args.has_receipt == false", e) is True
+    assert evaluate("args.x == null", e) is True
+    assert evaluate("true and not false", e) is True

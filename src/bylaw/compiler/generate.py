@@ -21,7 +21,7 @@ SYSTEM = "You write realistic, varied test cases for a policy reviewer. Labels m
 CASE_RULES = """Each case is one tool call the travel-desk agent is about to make, with the conversation \
 that led to it. Fields:
 - employee_id: one of {employees}
-- tool and args: a real tool call. Use real ids from the inventory below when the case needs them; \
+- tool and args: a real tool call, using exactly the argument names in TOOLS below. Use real ids from the inventory below when the case needs them; \
 if the case needs something not in the inventory, use an id that is not listed and give "facts" \
 with the looked-up values (for book_hotel: {{"hotel": {{"city","city_tier","name","nightly_rate_usd"}}}}; for \
 book_flight: {{"flight": {{...,"duration_h"}}, "fare_usd", "days_before_departure"}}).
@@ -32,6 +32,9 @@ must sign off, or it cannot be decided from what is there), deny (forbidden).
 - rule_id: the rule that decides it (null for proceed), and tags.
 Today is {today}.
 
+TOOLS (exact argument names; ? marks optional ones)
+{tools}
+
 INVENTORY
 flights: {flights}
 hotels: {hotels}
@@ -39,8 +42,10 @@ employees: {employee_rows}"""
 
 
 def case_rules() -> str:
+    from bylaw.agent.tools import signatures
+
     return CASE_RULES.format(
-        employees=sorted(fixtures.EMPLOYEES), today=fixtures.TODAY,
+        employees=sorted(fixtures.EMPLOYEES), today=fixtures.TODAY, tools=signatures(),
         flights=json.dumps(fixtures.FLIGHTS), hotels=json.dumps(fixtures.HOTELS),
         employee_rows=json.dumps(list(fixtures.EMPLOYEES.values())))
 

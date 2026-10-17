@@ -36,7 +36,7 @@ def script(state, questions):
     out = {}
     for key in questions:
         sharp = questions[key]["instructions"].startswith("SHARP")
-        p = (0.95 if wine else 0.03) if sharp else (0.45 if wine else 0.55)
+        p = (0.95 if wine else 0.03) if sharp else 0.5  # vague: says nothing either way
         out[key] = noul(p)
     return out
 
@@ -97,11 +97,11 @@ def test_weak_question_rewritten_then_warned():
 def test_pipeline_end_to_end_with_fakes(tmp_path):
     draft_out = json.dumps({k: v for k, v in json.loads(DRAFT.model_dump_json()).items() if k != "warnings"})
     cases_out = json.dumps({"cases": [
-        {"employee_id": "maya", "tool": "submit_expense", "args": {"amount_usd": 20, "has_receipt": True,
-         "description": "wine"}, "conversation": [["user", "wine with the team"]], "expected": "deny",
+        {"employee_id": "maya", "tool": "submit_expense", "args": {"category": "meals", "amount_usd": 20, "date": "2026-11-04",
+         "has_receipt": True, "description": "wine"}, "conversation": [["user", "wine with the team"]], "expected": "deny",
          "rule_id": "alcohol", "tags": ["violating"]},
-        {"employee_id": "maya", "tool": "submit_expense", "args": {"amount_usd": 20, "has_receipt": True,
-         "description": "taxi"}, "conversation": [["user", "taxi to the airport"]], "expected": "proceed",
+        {"employee_id": "maya", "tool": "submit_expense", "args": {"category": "meals", "amount_usd": 20, "date": "2026-11-04",
+         "has_receipt": True, "description": "taxi"}, "conversation": [["user", "taxi to the airport"]], "expected": "proceed",
          "rule_id": None, "tags": ["compliant"]},
     ]})
     llm = FakeLLM({"compiler": [draft_out], "cases": [cases_out, cases_out]})
@@ -132,5 +132,62 @@ def test_rewrite_prompt_shows_misclassified_cases():
     llm = FakeLLM({"m": [json.dumps({"wordings": [{"instructions": "SHARP: alcohol?"}]})]})
     questions, warnings = tune(weak, CASES, FakeDecider(script), rounds=2, llm=llm, model_id="m")
     prompt = llm.prompts["m"][0][0]["content"][0]["text"]
-    assert "CASES IT GOT WRONG" in prompt and "Should be a breach" in prompt and '"description": "wine"' in prompt
+    assert "CASES IT GOT WRONG" in prompt and "Should be clear" in prompt and '"description": "taxi"' in prompt
     assert questions[0].instructions.startswith("SHARP") and not warnings
+
+
+def test_inverted_noul_question_is_flipped():
+    inverted = Draft(**{**DRAFT.model_dump(), "questions": [QuestionDraft(**{**QD.model_dump(),
+                       "violation": {"when_true": False}, "wordings": [{"instructions": "SHARP: alcohol?"}]})]})
+    questions, warnings = tune(inverted, CASES, FakeDecider(script))
+    q = questions[0]
+    assert q.violation.when_true is True
+    assert q.dev.accuracy == 1.0
+    assert any("is_alcohol: flipped" in w for w in warnings)
+
+
+def test_check_repair_round_keeps_a_better_expression():
+    from bylaw.compiler.repair import repair_checks
+    from bylaw.pack import Check
+
+    broken = Check(id="no_receipt", rule_id="receipt", expr="args.amount > 25 and not args.has_receipt",
+                   description="no receipt")
+    cases = [case(i, "guide", "receipt", False) for i in range(3)] + [case(9, "proceed", None, False)]
+    for c in cases[:3]:
+        c.args.update({"amount_usd": 40, "has_receipt": False})
+    fixed = '{"expr": "num(args.amount_usd) > 25 and not or_else(args.has_receipt, false)"}'
+    llm = FakeLLM({"m": [fixed]})
+    checks, warnings = repair_checks([broken], RULES, cases, {}, llm, "m")
+    assert checks[0].expr.startswith("num(args.amount_usd)")
+    assert any("no_receipt: rewritten" in w for w in warnings)
+    prompt = llm.prompts["m"][0][0]["content"][0]["text"]
+    assert "args.amount > 25" in prompt and "Should be a breach" in prompt
+
+
+def test_check_repair_keeps_original_when_rewrite_is_worse():
+    from bylaw.compiler.repair import repair_checks
+    from bylaw.pack import Check
+
+    good = Check(id="c", rule_id="receipt", expr="args.missing_field > 1", description="d")
+    cases = [case(i, "guide", "receipt", False) for i in range(2)]
+    llm = FakeLLM({"m": ['{"expr": "args.other_missing > 1"}']})
+    checks, warnings = repair_checks([good], RULES, cases, {}, llm, "m")
+    assert checks[0].expr == "args.missing_field > 1"
+    assert any("c: rewrite did not help" in w for w in warnings)
+
+
+def test_generated_cases_must_fit_tool_schemas():
+    from bylaw.compiler.generate import case_rules, generate_cases
+
+    out = json.dumps({"cases": [
+        {"employee_id": "maya", "tool": "submit_expense", "args": {"amount": 20, "category": "meals"},
+         "conversation": [["user", "x"]], "expected": "proceed", "tags": ["compliant"]},
+        {"employee_id": "maya", "tool": "submit_expense", "args": {"category": "meals", "amount_usd": 20,
+         "date": "2026-11-04", "description": "lunch"}, "conversation": [["user", "x"]], "expected": "proceed",
+         "tags": ["compliant"]},
+    ]})
+    llm = FakeLLM({"m": [out, out]})
+    cases, warnings = generate_cases(DRAFT, llm, "m", per_rule=2)
+    assert len(cases) == 2  # one good case per rule survives
+    assert any("unknown argument amount" in w for w in warnings)
+    assert "submit_expense(category: string, amount_usd: number" in case_rules()

@@ -58,3 +58,15 @@ def test_build_desk_wires_gate_and_tools():
     agent = build_desk(make_pack(), FakeDecider.constant(0.0), Session("maya"), model_id="x")
     assert set(agent.tool_names) >= {"book_flight", "book_hotel", "submit_expense"}
     assert "Maya Lindgren" in agent.system_prompt
+
+
+def test_tool_signatures_and_arg_checks():
+    from bylaw.agent.tools import TOOL_SCHEMAS, args_problem, signatures
+
+    assert set(TOOL_SCHEMAS["book_hotel"]["required"]) == {"hotel_id", "check_in", "nights"}
+    assert args_problem("book_hotel", {"hotel_id": "x", "check_in": "2026-11-03", "nights": 2}) is None
+    assert "missing nights" in args_problem("book_hotel", {"hotel_id": "x", "check_in": "2026-11-03"})
+    assert "unknown argument price" in args_problem("book_hotel", {"hotel_id": "x", "check_in": "d", "nights": 1,
+                                                                   "price": 3})
+    assert "unknown tool" in args_problem("teleport", {})
+    assert "book_hotel(hotel_id: string, check_in: string, nights: integer, reason?: string)" in signatures()

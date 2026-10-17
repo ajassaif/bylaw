@@ -10,6 +10,7 @@ from bylaw import expr
 from bylaw.cases import Case, question_label
 from bylaw.compiler.extract import Draft, extract_draft
 from bylaw.compiler.generate import generate_cases
+from bylaw.compiler.repair import repair_checks
 from bylaw.compiler.report import render_report
 from bylaw.compiler.tune import tune
 from bylaw.llm import JsonLLM
@@ -55,9 +56,18 @@ def check_warnings(pack: Pack, cases: list[Case]) -> list[str]:
 
 def compile_policy(policy_text: str, llm: JsonLLM, decider, cfg: CompileConfig,
                    tools: dict[str, str]) -> tuple[Pack, list[Case], str]:
+    def stage(msg: str) -> None:
+        print(f"[compile {datetime.now(UTC):%H:%M:%S}] {msg}", flush=True)
+
+    stage("reading the policy")
     draft = extract_draft(policy_text, llm, cfg.model_id, tools)
+    stage(f"{len(draft.rules)} rules, {len(draft.checks)} checks, {len(draft.questions)} questions; writing cases")
     cases, case_warnings = generate_cases(draft, llm, cfg.case_model_id, cfg.per_rule)
+    stage(f"{len(cases)} practice cases; tuning questions on the Decider")
     questions, tune_warnings = tune(draft, cases, decider, cfg.rounds, llm, cfg.model_id)
+    stage("repairing checks")
+    checks, repair_warnings = repair_checks(draft.checks, draft.rules, cases, draft.tables, llm, cfg.model_id)
+    draft = draft.model_copy(update={"checks": checks})
     pack = assemble_pack(draft, questions, policy_text, cfg)
-    warnings = [*draft.warnings, *case_warnings, *tune_warnings, *check_warnings(pack, cases)]
+    warnings = [*draft.warnings, *case_warnings, *tune_warnings, *repair_warnings, *check_warnings(pack, cases)]
     return pack, cases, render_report(pack, warnings)

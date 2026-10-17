@@ -17,7 +17,7 @@ from bylaw import expr
 from bylaw.decide import violation_probability
 from bylaw.decider import to_wire
 from bylaw.llm import JsonLLM, LLMOutputError
-from bylaw.pack import Question, QuestionMetrics
+from bylaw.pack import Question, QuestionMetrics, Violation
 from bylaw.state import render_state
 
 HI_GRID = [round(0.5 + 0.05 * i, 2) for i in range(10)]   # 0.50 .. 0.95
@@ -142,6 +142,16 @@ def tune(draft: Draft, cases: list[Case], decider, rounds: int = 2, llm: JsonLLM
             tuned.append(qd.as_question(0))
             continue
         best = _best(scored)
+        if qd.type == "noul" and accuracy(scored[best]) < 0.5:
+            # A yes/no question scoring under 50% is usually marked backwards: the compiler said
+            # "yes means breach" where the policy meant "no means breach". Flip it if that fixes it.
+            flipped = {i: [(1.0 - p, label, st) for p, label, st in rows] for i, rows in scored.items()}
+            fbest = _best(flipped)
+            if accuracy(flipped[fbest]) >= WEAK_ACCURACY:
+                warnings.append(f"{qd.id}: flipped which answer counts as a breach "
+                                f"(accuracy {accuracy(scored[best]):.2f} -> {accuracy(flipped[fbest]):.2f})")
+                qd = qd.model_copy(update={"violation": Violation(when_true=not qd.violation.when_true)})
+                scored, best = flipped, fbest
         for _ in range(rounds if llm is not None and model_id is not None else 0):
             if accuracy(scored[best]) >= WEAK_ACCURACY:
                 break

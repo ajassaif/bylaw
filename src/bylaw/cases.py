@@ -50,6 +50,10 @@ def build_context(employee_id: str, tool: str, args: dict, facts: dict | None = 
 
 
 def from_draft(d: CaseDraft, case_id: str, source: str) -> Case:
+    from bylaw.agent.tools import args_problem
+
+    if problem := args_problem(d.tool, d.args):
+        raise ValueError(f"{d.tool}: {problem}")
     return Case(id=case_id, tool=d.tool, args=d.args, conversation=d.conversation, expected=d.expected,
                 rule_id=d.rule_id, tags=d.tags, source=source,
                 context=build_context(d.employee_id, d.tool, d.args, d.facts, d.trip))
