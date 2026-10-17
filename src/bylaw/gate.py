@@ -30,13 +30,15 @@ class PolicyGate(InterventionHandler):
 
     def __init__(self, pack: Pack, decider, context_provider: Callable[[], dict],
                  escalator: Escalator | None = None, on_receipt: Callable[[Receipt], None] | None = None,
-                 max_guides_per_rule: int = 2) -> None:
+                 max_guides_per_rule: int = 2,
+                 facts_provider: Callable[[str, dict], dict] | None = None) -> None:
         self.pack = pack
         self.decider = decider
         self.context_provider = context_provider
         self.escalator = escalator
         self.on_receipt = on_receipt
         self.max_guides_per_rule = max_guides_per_rule
+        self.facts_provider = facts_provider
         self.receipts: list[Receipt] = []
         self._guides: Counter[str] = Counter()
         self._gated = pack.gated_tools()
@@ -54,8 +56,10 @@ class PolicyGate(InterventionHandler):
         conversation = conversation_from_messages(event.agent.messages)
         started = time.perf_counter()
         try:
-            receipt = evaluate_call(self.pack, self.decider, tool, args, self.context_provider(), conversation,
-                                    self.escalator)
+            context = dict(self.context_provider())
+            if self.facts_provider is not None:
+                context["facts"] = self.facts_provider(tool, args)
+            receipt = evaluate_call(self.pack, self.decider, tool, args, context, conversation, self.escalator)
         except DeciderUnavailable as exc:
             verdict = Verdict("confirm", None, UNAVAILABLE, 0.0, True, ())
             self._record(Receipt(tool=tool, args=args, verdict=verdict, decider_ms=None,

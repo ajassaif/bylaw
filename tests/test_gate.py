@@ -112,3 +112,14 @@ def test_gate_accepted_by_strands_agent():
 
     Agent(model=BedrockModel(model_id="x", region_name="us-east-1"), interventions=[gate_with(FakeDecider.constant(0))],
           callback_handler=None)
+
+
+def test_facts_reach_checks_and_state():
+    p = make_pack()
+    p.checks[0].expr = "ctx.facts.hotel.nightly_rate_usd > 260"
+    fake = FakeDecider.constant(0.0)
+    gate = PolicyGate(p, fake, context_provider=lambda: CTX,
+                      facts_provider=lambda tool, args: {"hotel": {"nightly_rate_usd": 349}})
+    action = gate.before_tool_call(event("book_hotel", {"hotel_id": "aus-shore"}))
+    assert isinstance(action, Guide)
+    assert gate.receipts[-1].verdict.rule_id == "hotel_cap"
