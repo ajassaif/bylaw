@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 
 from bylaw.decider import AskResult, DeciderUnavailable
+from bylaw.llm import JsonLLM, Usage
 
 Script = Callable[[str, Mapping[str, dict]], dict[str, dict]]
 
@@ -43,3 +44,20 @@ class FakeDecider:
         if self.is_down:
             raise DeciderUnavailable("fake decider is down")
         return {"status": "ok", "checkpoint": "fake", "base_model": "fake", "device": "cpu", "max_length": 4096}
+
+
+class FakeLLM(JsonLLM):
+    """Queued raw replies per model id, sent through the real parse-and-repair path."""
+
+    def __init__(self, responses: dict[str, list[str]]) -> None:
+        self.responses = {k: list(v) for k, v in responses.items()}
+        self.prompts: dict[str, list[list[dict]]] = {}
+        self.systems: dict[str, list[str]] = {}
+
+    def _complete(self, model_id, system, messages, max_tokens, temperature):
+        self.prompts.setdefault(model_id, []).append([dict(m) for m in messages])
+        self.systems.setdefault(model_id, []).append(system)
+        queue = self.responses.get(model_id) or []
+        if not queue:
+            raise AssertionError(f"FakeLLM has no reply queued for {model_id}")
+        return queue.pop(0), Usage(10, 10, 50.0)
