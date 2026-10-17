@@ -123,3 +123,14 @@ def test_facts_reach_checks_and_state():
     action = gate.before_tool_call(event("book_hotel", {"hotel_id": "aus-shore"}))
     assert isinstance(action, Guide)
     assert gate.receipts[-1].verdict.rule_id == "hotel_cap"
+
+
+def test_question_when_guard_skips_question():
+    p = make_pack()
+    p.questions[0].when = "args.category == 'meals'"
+    fake = FakeDecider.constant(0.99)
+    receipt = evaluate_call(p, fake, "submit_expense", {"category": "ground_transport"}, CTX, [])
+    assert "is_alcohol" not in fake.calls[0][1]
+    assert receipt.verdict.action == "confirm"  # the other two questions still fire at 0.99
+    receipt = evaluate_call(p, FakeDecider.constant(0.99), "submit_expense", {"category": "meals"}, CTX, [])
+    assert receipt.verdict.action == "deny"

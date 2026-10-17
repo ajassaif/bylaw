@@ -13,6 +13,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, model_validator
 
+from bylaw import expr
+
 Action = Literal["proceed", "guide", "confirm", "deny"]
 OnViolation = Literal["guide", "confirm", "deny"]
 ACTIONS: tuple[Action, ...] = ("proceed", "guide", "confirm", "deny")
@@ -62,6 +64,8 @@ class Question(BaseModel):
     violation: Violation
     lo: float = 0.2
     hi: float = 0.8
+    # Optional restricted expression: the question is only asked when this is true (or unknown).
+    when: str | None = None
     dev: QuestionMetrics | None = None
 
     @model_validator(mode="after")
@@ -70,6 +74,8 @@ class Question(BaseModel):
         expected = _VIOLATION_FIELD[self.type]
         if set_fields != {expected}:
             raise ValueError(f"{self.type} question {self.id} needs violation.{expected} and nothing else")
+        if self.when is not None:
+            expr.validate(self.when)
         if not 0.0 <= self.lo <= self.hi <= 1.0:
             raise ValueError(f"question {self.id}: thresholds must satisfy 0 <= lo <= hi <= 1")
         return self

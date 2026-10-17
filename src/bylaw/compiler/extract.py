@@ -24,11 +24,12 @@ class QuestionDraft(BaseModel):
     type: Literal["noul", "choice", "score"]
     violation: Violation
     wordings: list[Wording] = Field(min_length=1, max_length=3)
+    when: str | None = None
 
     def as_question(self, i: int = 0, **extra: Any) -> Question:
         w = self.wordings[i]
         return Question(id=self.id, rule_id=self.rule_id, type=self.type, instructions=w.instructions,
-                        criteria=w.criteria, violation=self.violation, **extra)
+                        criteria=w.criteria, violation=self.violation, when=self.when, **extra)
 
 
 class DraftOut(BaseModel):
@@ -70,6 +71,7 @@ is this one cost split across claims, is the description honest about what was b
 "wordings" that differ in phrasing, each with "criteria" describing both sides (noul: "true" and \
 "false" keys; choice: option name -> meaning; score: ordered list of level descriptions, lowest \
 first).
+   Give "when" (an expression in the same language as checks) if the question only makes sense for some calls, e.g. "args.category == 'client_entertainment'" or "ctx.facts.days_before_departure < 14". Without it the question is asked on every call to the rule's tools.
 
 The classifier sees this state, so write questions answerable from it:
 {profile}

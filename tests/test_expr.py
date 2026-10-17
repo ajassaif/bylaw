@@ -64,3 +64,14 @@ def test_three_valued_logic():
     assert evaluate("args.cabin == 'business' and args.missing > 3", e) is False
     assert evaluate("args.cabin == 'economy' or args.missing > 3", e) is True
     assert evaluate("args.cabin == 'economy' and args.missing > 3", e) is None
+
+
+def test_present_or_else_count_where():
+    e = env(args={"justification": "", "reason": "sold out"},
+            ctx={"trip": {"approvals_requested": [{"status": "pending"}, {"status": "approved"}]}})
+    assert evaluate("present(args.reason)", e) is True
+    assert evaluate("present(args.justification)", e) is False
+    assert evaluate("present(args.missing)", e) is False
+    assert evaluate("or_else(args.missing, 0) + 5 == 5", e) is True
+    assert evaluate("count_where(ctx.trip.approvals_requested, 'status', 'approved') == 1", e) is True
+    assert evaluate("count_where(args.reason, 'status', 'approved') == 0", e) is None

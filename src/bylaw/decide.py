@@ -6,7 +6,7 @@ so an agent cannot talk its way past it.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from typing import Literal
 
@@ -47,7 +47,7 @@ class Verdict:
 
 
 def _findings(pack: Pack, tool: str, check_results: Mapping[str, bool | None],
-              answers: Mapping[str, dict]) -> list[Finding]:
+              answers: Mapping[str, dict], skipped: Collection[str]) -> list[Finding]:
     found: list[Finding] = []
     for c in pack.checks_for(tool):
         result = check_results.get(c.id)
@@ -58,6 +58,8 @@ def _findings(pack: Pack, tool: str, check_results: Mapping[str, bool | None],
         else:
             found.append(Finding(c.rule_id, "check", c.id, None, "uncertain"))
     for q in pack.questions_for(tool):
+        if q.id in skipped:  # its `when` guard was false: the question does not apply to this call
+            continue
         answer = answers.get(q.id)
         try:
             p = violation_probability(q, answer) if answer else None
@@ -76,8 +78,8 @@ def _findings(pack: Pack, tool: str, check_results: Mapping[str, bool | None],
 
 
 def decide(pack: Pack, tool: str, check_results: Mapping[str, bool | None],
-           answers: Mapping[str, dict]) -> Verdict:
-    findings = _findings(pack, tool, check_results, answers)
+           answers: Mapping[str, dict], skipped: Collection[str] = ()) -> Verdict:
+    findings = _findings(pack, tool, check_results, answers, skipped)
     order = {r.id: i for i, r in enumerate(pack.rules)}
 
     violations = [f for f in findings if f.status == "violation"]

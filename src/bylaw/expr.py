@@ -64,12 +64,23 @@ def _lower(s: Any) -> str:
     return s.lower()
 
 
+def _count_where(items: Any, key: Any, value: Any) -> int:
+    if not isinstance(items, list):
+        raise _Unknown
+    return sum(1 for item in items if isinstance(item, dict) and item.get(key) == value)
+
+
 FUNCS: dict[str, Callable[..., Any]] = {
     "days_between": _days_between,
     "num": _num,
     "len": _len,
     "lower": _lower,
+    "count_where": _count_where,
+    # present() and or_else() take an expression that may be missing; _eval handles them specially.
+    "present": lambda x: x,
+    "or_else": lambda x, d: x,
 }
+LAZY = {"present", "or_else"}
 
 _BINOPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
 _CMPOPS = {
@@ -161,7 +172,19 @@ def _eval(node: ast.AST, env: Mapping[str, Any]) -> Any:
             return True
         case ast.List(elts=elts) | ast.Tuple(elts=elts):
             return [_eval(e, env) for e in elts]
-        case ast.Call(func=ast.Name(id=name), args=args):
+        case ast.Call(func=ast.Name(id="present"), args=[arg]):
+            try:
+                value = _eval(arg, env)
+            except _Unknown:
+                return False
+            return value is not None and value != "" and value != []
+        case ast.Call(func=ast.Name(id="or_else"), args=[arg, fallback]):
+            try:
+                value = _eval(arg, env)
+            except _Unknown:
+                value = None
+            return _eval(fallback, env) if value is None or value == "" else value
+        case ast.Call(func=ast.Name(id=name), args=args) if name not in LAZY:
             return FUNCS[name](*[_eval(a, env) for a in args])
     raise ExprError(f"unexpected node {type(node).__name__}")  # unreachable after _check
 

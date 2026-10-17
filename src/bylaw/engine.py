@@ -52,7 +52,8 @@ def evaluate_call(pack: Pack, decider, tool: str, args: dict, context: dict,
     env = {"args": args, "ctx": context, "tables": pack.tables}
     check_results = {c.id: expr.evaluate(c.expr, env) for c in pack.checks_for(tool)}
 
-    questions = {q.id: to_wire(q) for q in pack.questions_for(tool)}
+    asked = [q for q in pack.questions_for(tool) if q.when is None or expr.evaluate(q.when, env) is not False]
+    questions = {q.id: to_wire(q) for q in asked}
     answers: dict[str, dict] = {}
     decider_ms = None
     tokens = 0
@@ -60,7 +61,7 @@ def evaluate_call(pack: Pack, decider, tool: str, args: dict, context: dict,
         result = decider.ask(state, questions)
         answers, decider_ms, tokens = result.answers, result.latency_ms, result.input_tokens
 
-    verdict = decide(pack, tool, check_results, answers)
+    verdict = decide(pack, tool, check_results, answers, skipped={q.id for q in pack.questions_for(tool)} - set(questions))
     escalation = escalator.judge(state, tool) if verdict.uncertain and escalator is not None else None
     return Receipt(tool=tool, args=args, verdict=verdict, decider_ms=decider_ms,
                    total_ms=(time.perf_counter() - started) * 1000, input_tokens=tokens,

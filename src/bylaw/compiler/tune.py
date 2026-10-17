@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from bylaw.cases import Case, question_label
 from bylaw.compiler.extract import Draft, QuestionDraft, Wording
+from bylaw import expr
 from bylaw.decide import violation_probability
 from bylaw.decider import to_wire
 from bylaw.llm import JsonLLM, LLMOutputError
@@ -37,13 +38,19 @@ def _tools_by_rule(draft: Draft) -> dict[str, list[str]]:
     return {r.id: r.tools for r in draft.rules}
 
 
+def _applies(qd: QuestionDraft, case: Case, tables: dict) -> bool:
+    if qd.when is None:
+        return True
+    return expr.evaluate(qd.when, {"args": case.args, "ctx": case.context, "tables": tables}) is not False
+
+
 def _score(qd: QuestionDraft, wordings: list[tuple[int, Wording]], cases: list[Case], decider,
-           tools_by_rule: dict[str, list[str]]) -> dict[int, Scored]:
+           tools_by_rule: dict[str, list[str]], tables: dict) -> dict[int, Scored]:
     """One Decider request per relevant case, carrying every given wording of this question."""
     scored: dict[int, Scored] = defaultdict(list)
     for case in cases:
         label = question_label(case, qd)
-        if label is None or case.tool not in tools_by_rule[qd.rule_id]:
+        if label is None or case.tool not in tools_by_rule[qd.rule_id] or not _applies(qd, case, tables):
             continue
         questions = {f"{qd.id}::{i}": to_wire(qd.as_question(0), w.instructions, w.criteria) for i, w in wordings}
         state = render_state(case.conversation, case.tool, case.args, case.context)
@@ -60,7 +67,8 @@ def _score_all(draft: Draft, cases: list[Case], decider) -> dict[str, dict[int, 
     tools_by_rule = _tools_by_rule(draft)
     result: dict[str, dict[int, Scored]] = {q.id: defaultdict(list) for q in draft.questions}
     for case in cases:
-        relevant = [q for q in draft.questions if case.tool in tools_by_rule[q.rule_id]]
+        relevant = [q for q in draft.questions
+                    if case.tool in tools_by_rule[q.rule_id] and _applies(q, case, draft.tables)]
         labels = {q.id: question_label(case, q) for q in relevant}
         wire = {f"{q.id}::{i}": to_wire(q.as_question(0), w.instructions, w.criteria)
                 for q in relevant if labels[q.id] is not None for i, w in enumerate(q.wordings)}
@@ -144,7 +152,7 @@ def tune(draft: Draft, cases: list[Case], decider, rounds: int = 2, llm: JsonLLM
                 break
             start = len(wordings)
             wordings.extend(fresh)
-            scored.update(_score(qd, list(enumerate(wordings))[start:], cases, decider, tools_by_rule))
+            scored.update(_score(qd, list(enumerate(wordings))[start:], cases, decider, tools_by_rule, draft.tables))
             best = _best(scored)
         acc = accuracy(scored[best])
         if acc < WEAK_ACCURACY:
@@ -152,7 +160,7 @@ def tune(draft: Draft, cases: list[Case], decider, rounds: int = 2, llm: JsonLLM
         lo, hi = thresholds(scored[best])
         w = wordings[best]
         tuned.append(Question(id=qd.id, rule_id=qd.rule_id, type=qd.type, instructions=w.instructions,
-                              criteria=w.criteria, violation=qd.violation, lo=lo, hi=hi,
+                              criteria=w.criteria, violation=qd.violation, lo=lo, hi=hi, when=qd.when,
                               dev=QuestionMetrics(n=len(scored[best]), accuracy=round(acc, 4),
                                                   brier=round(brier(scored[best]), 4), candidates=len(wordings))))
     return tuned, warnings
