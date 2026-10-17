@@ -73,3 +73,9 @@ def test_missing_answer_is_uncertain():
     p = pack([rule("r1")], [noul_q("q1", "r1")])
     v = decide(p, TOOL, {}, {})
     assert (v.action, v.uncertain) == ("confirm", True)
+
+
+def test_fixable_breach_before_signoff():
+    p = pack([rule("r1", "confirm"), rule("r2", "guide")], [noul_q("q1", "r1"), noul_q("q2", "r2")])
+    v = decide(p, TOOL, {}, {"q1": {"noul": 0.99}, "q2": {"noul": 0.85}})
+    assert (v.action, v.rule_id) == ("guide", "r2")

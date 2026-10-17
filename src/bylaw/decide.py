@@ -12,7 +12,9 @@ from typing import Literal
 
 from bylaw.pack import Action, Pack, Question
 
-SEVERITY = {"guide": 1, "confirm": 2, "deny": 3}
+# A refusal wins. A breach the agent can fix comes before a sign-off: nobody should be asked to
+# approve a booking the agent is about to change anyway.
+SEVERITY = {"confirm": 1, "guide": 2, "deny": 3}
 
 
 def violation_probability(q: Question, answer: dict) -> float:

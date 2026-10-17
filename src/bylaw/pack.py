@@ -35,6 +35,8 @@ class Check(BaseModel):
     rule_id: str
     expr: str
     description: str
+    # Narrows a multi-tool rule: this check only runs for these tools. None = all of the rule's tools.
+    tools: list[str] | None = None
 
 
 class Violation(BaseModel):
@@ -94,10 +96,13 @@ class Pack(BaseModel):
 
     @model_validator(mode="after")
     def _references_exist(self) -> Pack:
-        rule_ids = {r.id for r in self.rules}
+        rules = {r.id: r for r in self.rules}
         for item in [*self.checks, *self.questions]:
-            if item.rule_id not in rule_ids:
+            if item.rule_id not in rules:
                 raise ValueError(f"{item.id} refers to unknown rule {item.rule_id}")
+        for c in self.checks:
+            if c.tools and not set(c.tools) <= set(rules[c.rule_id].tools):
+                raise ValueError(f"check {c.id} names tools outside its rule {c.rule_id}")
         return self
 
     def rule(self, rule_id: str) -> Rule:
@@ -112,7 +117,7 @@ class Pack(BaseModel):
 
     def checks_for(self, tool: str) -> list[Check]:
         ids = self._rules_for(tool)
-        return [c for c in self.checks if c.rule_id in ids]
+        return [c for c in self.checks if c.rule_id in ids and (not c.tools or tool in c.tools)]
 
     def gated_tools(self) -> set[str]:
         return {t for r in self.rules for t in r.tools}

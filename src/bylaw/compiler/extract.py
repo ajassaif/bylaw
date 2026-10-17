@@ -59,7 +59,7 @@ the agent can act on.
 is one expression that is TRUE WHEN THE RULE IS BROKEN. The expression language allows: names \
 args, ctx, tables; dotted or ["key"] access; and/or/not; == != < <= > >= in, not in; + - * /; \
 lists like ['VP','SVP']; and only these functions: days_between(a, b), num(x), len(x), lower(s). \
-Put numeric limits from the policy into "tables" and reference them as tables.<name>.
+Put numeric limits from the policy into "tables" and reference them as tables.<name>. When a rule covers several tools but a check only makes sense for one, give the check "tools": [that tool].
 3. Put every JUDGEMENT in "questions" for a classifier that reads the rendered state and answers \
 yes/no (noul), one of N options (choice), or a level on an ordered scale (score). One judgement \
 per question. NEVER ask the classifier to compare or add numbers; that is what checks are for. \
