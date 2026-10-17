@@ -12,7 +12,7 @@ Every booking and expense claim goes past the compiled policy first.
 Hackathon entry: AWS Agent Experience Hackathon, Strands Decider. Decision pattern: **policy**.
 Tags: `#strands-decider-2b` `#policy`.
 
-![The Bylaw workbench: the policy on the left with margin notes, the travel desk on the right](docs/img/workbench.png)
+![The Bylaw workbench: clause 3.1 highlighted with its code check marked breached, and the travel desk sending South Shore Lofts back](docs/img/workbench.jpg)
 
 ## What happens to one booking
 
@@ -23,8 +23,10 @@ Maya asks the desk for South Shore Lofts in Austin. Before `book_hotel` runs, th
 3. asks Decider every question that applies to hotel bookings, in one request;
 4. turns the answers into a verdict: here, *sent back*, because the rate is more than 10% over.
 
-The agent gets the remedy, books Congress Avenue Suites at $179 instead, and the policy clause
-that decided it lights up in the margin of the document.
+The agent gets the remedy and the clause that decided it lights up in the margin of the document.
+It then tries Congress Avenue Suites at $179, which is under the cap. With the compiled pack that
+retry still goes to a person: the Decider put the chance that both nights are work nights at
+50%, inside the band where the pack asks someone rather than guessing.
 
 ## Results
 
