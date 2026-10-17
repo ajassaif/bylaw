@@ -62,3 +62,10 @@ def test_heldout_prompt_excludes_pack():
     assert "THE POLICY TEXT" in sent
     for leak in ("is_alcohol", "violation", "hi=", "threshold", "Decider"):
         assert leak not in sent
+
+
+def test_bench_without_llms(tmp_path):
+    summary = run_bench(small_pack(), "POLICY", [CASES[0], CASES[6]], FakeDecider(script), FakeLLM({}), [],
+                        hybrid_model="", out_dir=tmp_path, prices={}, gpu_usd_per_hour=0.0, env={"instance": "laptop"})
+    assert set(summary["systems"]) == {"bylaw"}
+    assert summary["hybrid"] is None

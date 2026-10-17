@@ -72,7 +72,7 @@ def bench(
     cases: Path = typer.Option(..., exists=True),
     out: Path = typer.Option(...),
     baselines: str = typer.Option(",".join(config.BASELINES)),
-    hybrid_model: str = typer.Option(config.HYBRID_MODEL),
+    hybrid_model: str = typer.Option(config.HYBRID_MODEL, help="Empty string to skip the hybrid row."),
     prices: Path = typer.Option(Path("bench/prices.json"), exists=True,
                                 help='{"models": {id: [usd_per_1M_in, usd_per_1M_out]}, "gpu_usd_per_hour": x}'),
     instance: str = typer.Option("unknown", help="EC2 instance type the Decider ran on."),

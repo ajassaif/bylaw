@@ -64,7 +64,7 @@ def run_bench(pack: Pack, policy_text: str, cases: list[Case], decider, llm: Jso
               hybrid_model: str, out_dir: Path, prices: Prices, gpu_usd_per_hour: float, env: dict) -> dict:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    judges = {m: LLMJudge(llm, m, policy_text) for m in {*baselines, hybrid_model}}
+    judges = {m: LLMJudge(llm, m, policy_text) for m in {*baselines, hybrid_model} if m}
     gpu_usd_per_ms = gpu_usd_per_hour / 3_600_000
     rows: list[dict] = []
     escalated = 0
@@ -82,7 +82,9 @@ def run_bench(pack: Pack, policy_text: str, cases: list[Case], decider, llm: Jso
             if label is not None and answer:
                 question_scores.setdefault(q.id, []).append((violation_probability(q, answer), label))
 
-        if v.uncertain:
+        if not hybrid_model:
+            pass
+        elif v.uncertain:
             escalated += 1
             out, usage, error = judges[hybrid_model].decide_case(state, case.tool)
             rows.append(_row(case, "bylaw+hybrid", out.action if out else "abstain", out.confidence if out else 0.0,
@@ -106,7 +108,7 @@ def run_bench(pack: Pack, policy_text: str, cases: list[Case], decider, llm: Jso
         "pack_hash": pack_hash(pack),
         "systems": {name: _summarise(rs) for name, rs in systems.items()},
         "hybrid": {"model": hybrid_model, "coverage": 1 - escalated / len(cases) if cases else 0.0,
-                   "escalated": escalated},
+                   "escalated": escalated} if hybrid_model else None,
         "decider_question_brier": {qid: {"n": len(s), "brier": brier_binary([p for p, _ in s], [lab for _, lab in s])}
                                    for qid, s in question_scores.items()},
         "prices": {k: list(v) for k, v in prices.items()},
@@ -136,6 +138,8 @@ def render_bench_report(summary: dict) -> str:
                      f"{_fmt(s['latency']['p50'], digits=0)} | {_fmt(s['latency']['p95'], digits=0)} | "
                      f"{_fmt(s['usd_per_1k'], digits=3)} | {s['abstains']} |")
     h = summary["hybrid"]
-    lines += ["", f"Hybrid: Decider decided {_fmt(h['coverage'], True)} of cases alone and escalated "
-              f"{h['escalated']} to `{h['model']}`.", ""]
+    if h:
+        lines += ["", f"Hybrid: Decider decided {_fmt(h['coverage'], True)} of cases alone and escalated "
+                  f"{h['escalated']} to `{h['model']}`.", ""]
+    lines += ["", f"Environment: {summary['env']}", ""]
     return "\n".join(lines)
