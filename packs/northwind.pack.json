@@ -2,7 +2,7 @@
   "version": 1,
   "policy_title": "Northwind Supply Co. Travel and Expense Policy v4.2",
   "policy_sha256": "8ca5f8ea1c43a81fc210e9994dec082f6bed162a5ce87fda5a1c2d3e5f13228f",
-  "compiled_at": "2026-10-17T13:54:14+00:00",
+  "compiled_at": "2026-10-17T14:09:27+00:00",
   "models": {
     "compiler": "mistral.mistral-large-3-675b-instruct",
     "cases": "mistral.mistral-large-3-675b-instruct"
@@ -166,6 +166,40 @@
       "tools": null
     },
     {
+      "id": "book_early_flights_check",
+      "rule_id": "book_early_flights",
+      "expr": "ctx.facts.days_before_departure < 14 && (!present(args.justification) || lower(or_else(args.justification, '')) in ['i forgot', 'i forgot to book earlier.', 'it was cheaper to wait.', 'my manager said it\\'s fine to book late.', 'personal trip extension.'])",
+      "description": "Violated if booking less than 14 days before departure without a justification.",
+      "tools": null
+    },
+    {
+      "id": "cabin_class_under_6h",
+      "rule_id": "cabin_class_by_duration",
+      "expr": "ctx.facts.flight.duration_h < 6 && args.cabin != 'economy'",
+      "description": "Violated if cabin is not economy for flights under 6 hours.",
+      "tools": [
+        "book_flight"
+      ]
+    },
+    {
+      "id": "cabin_class_6_to_10h",
+      "rule_id": "cabin_class_by_duration",
+      "expr": "args.cabin == 'first' || (ctx.facts.flight.duration_h < 6 && args.cabin != 'economy') || (ctx.facts.flight.duration_h >= 6 && ctx.facts.flight.duration_h < 10 && args.cabin != 'premium_economy') || (ctx.facts.flight.duration_h >= 10 && (args.cabin != 'business' || ctx.employee.level in ['IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'Manager']))",
+      "description": "Violated if cabin is not premium economy for flights 6-10 hours.",
+      "tools": [
+        "book_flight"
+      ]
+    },
+    {
+      "id": "cabin_class_10h_plus",
+      "rule_id": "cabin_class_by_duration",
+      "expr": "args.cabin == 'first' || (ctx.facts.flight.duration_h < 6 && args.cabin != 'economy') || (ctx.facts.flight.duration_h >= 6 && ctx.facts.flight.duration_h < 10 && args.cabin != 'premium_economy') || (ctx.facts.flight.duration_h >= 10 && (args.cabin != 'business' || ctx.employee.level not in ['Director', 'VP', 'Executive']))",
+      "description": "Violated if cabin is not business for flights 10+ hours or employee level is below Director.",
+      "tools": [
+        "book_flight"
+      ]
+    },
+    {
       "id": "cabin_class_first_class",
       "rule_id": "cabin_class_by_duration",
       "expr": "args.cabin == 'first'",
@@ -189,36 +223,94 @@
       "tools": null
     },
     {
-      "id": "recorded_approval_only_check",
-      "rule_id": "recorded_approval_only",
-      "expr": "false",
-      "description": "This rule requires judgement (whether an approval is recorded), so no numeric check is possible.",
+      "id": "hotel_over_cap_reason",
+      "rule_id": "hotel_over_cap_approval",
+      "expr": "ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] * 1.1 || (ctx.facts.hotel.nightly_rate_usd > tables.city_tier_caps[ctx.facts.hotel.city_tier] && (present(args.reason) == false || ctx.trip.approvals_requested == null || count_where(ctx.trip.approvals_requested, 'hotel_id', ctx.facts.hotel.id) == 0))",
+      "description": "Violated if hotel nightly rate is up to 10% over cap but no reason is provided.",
       "tools": null
+    },
+    {
+      "id": "meals_per_diem_check",
+      "rule_id": "meals_per_diem",
+      "expr": "lower(args.category) == 'meals' && args.amount_usd > 75",
+      "description": "Violated if meal expense exceeds $75 per day.",
+      "tools": [
+        "submit_expense"
+      ]
+    },
+    {
+      "id": "gifts_limit_check",
+      "rule_id": "gifts_limit",
+      "expr": "args.category == 'gifts' && (args.amount_usd > 50 || !present(args.description) || lower(args.description) in ['cash', 'gift card', 'giftcard'])",
+      "description": "Violated if gift expense exceeds $50 or is for cash/gift cards.",
+      "tools": [
+        "submit_expense"
+      ]
+    },
+    {
+      "id": "receipts_required_check",
+      "rule_id": "receipts_required",
+      "expr": "args.amount_usd > 25 && !or_else(args.has_receipt, false)",
+      "description": "Violated if expense over $25 lacks a receipt.",
+      "tools": null
+    },
+    {
+      "id": "big_trips_approval_hotel_check",
+      "rule_id": "big_trips_approval",
+      "expr": "ctx.trip.total_usd + (ctx.facts.hotel.nightly_rate_usd * args.nights) > 3000 && count_where(ctx.trip.approvals_requested, 'status', 'approved') == 0",
+      "description": "Violated if trip total exceeds $3,000 and no manager approval is recorded.",
+      "tools": [
+        "book_hotel"
+      ]
     }
   ],
   "questions": [
     {
-      "id": "hotel_nights_work_only_judgement",
-      "rule_id": "hotel_nights_work_only",
+      "id": "book_early_flights_justification",
+      "rule_id": "book_early_flights",
       "type": "noul",
-      "instructions": "Does the employee explicitly mention or imply a personal reason for any night of the hotel stay?",
+      "instructions": "Is the justification for booking a flight less than 14 days before departure a valid business reason (e.g., customer request, supplier audit), and not \"I forgot\" or \"it was cheaper to wait\"?",
       "criteria": {
-        "true": "The employee states or implies a personal reason for at least one night (e.g., 'arriving early to adjust to jet lag,' 'staying an extra night for personal time,' or 'adding a weekend to visit family').",
-        "false": "All nights of the stay are directly tied to business activities (e.g., 'book the night before my meeting' or 'staying for the conference')."
+        "true": "The justification is a valid business reason.",
+        "false": "The justification is not a valid business reason (e.g., \"I forgot\", \"it was cheaper\")."
       },
       "violation": {
-        "when_true": true,
+        "when_true": false,
         "options": null,
         "at_or_above": null
       },
-      "lo": 0.1,
+      "lo": 0.5,
       "hi": 0.5,
+      "when": "ctx.facts.days_before_departure < 14 && present(args.justification)",
+      "dev": {
+        "n": 6,
+        "accuracy": 1.0,
+        "brier": 0.1078,
+        "candidates": 1
+      }
+    },
+    {
+      "id": "hotel_nights_work_only_judgement",
+      "rule_id": "hotel_nights_work_only",
+      "type": "noul",
+      "instructions": "Are the hotel nights being booked only for the nights before the first business day and the night of the last business day, with no personal extensions?",
+      "criteria": {
+        "true": "The hotel nights are only for business days.",
+        "false": "The hotel nights include personal extensions."
+      },
+      "violation": {
+        "when_true": false,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.5,
+      "hi": 0.55,
       "when": null,
       "dev": {
-        "n": 13,
-        "accuracy": 0.9231,
-        "brier": 0.1211,
-        "candidates": 5
+        "n": 11,
+        "accuracy": 0.9091,
+        "brier": 0.1515,
+        "candidates": 1
       }
     },
     {
@@ -235,13 +327,13 @@
         "options": null,
         "at_or_above": null
       },
-      "lo": 0.5,
-      "hi": 0.9,
+      "lo": 0.45,
+      "hi": 0.5,
       "when": "args.category != 'client_entertainment'",
       "dev": {
         "n": 23,
-        "accuracy": 0.913,
-        "brier": 0.0795,
+        "accuracy": 0.9565,
+        "brier": 0.0159,
         "candidates": 2
       }
     },
@@ -259,15 +351,10 @@
         "options": null,
         "at_or_above": null
       },
-      "lo": 0.5,
-      "hi": 0.95,
+      "lo": 0.2,
+      "hi": 0.8,
       "when": "args.category == 'client_entertainment'",
-      "dev": {
-        "n": 1,
-        "accuracy": 1.0,
-        "brier": 0.1539,
-        "candidates": 1
-      }
+      "dev": null
     },
     {
       "id": "one_expense_one_claim_judgement",
@@ -283,38 +370,62 @@
         "options": null,
         "at_or_above": null
       },
-      "lo": 0.25,
+      "lo": 0.4,
       "hi": 0.5,
       "when": null,
       "dev": {
         "n": 27,
-        "accuracy": 0.9259,
-        "brier": 0.0643,
+        "accuracy": 0.963,
+        "brier": 0.055,
         "candidates": 1
       }
     },
     {
-      "id": "personal_costs_judgement",
-      "rule_id": "personal_costs_not_reimbursed",
+      "id": "honest_description_judgement",
+      "rule_id": "honest_description",
       "type": "noul",
-      "instructions": "Does the expense description explicitly mention a personal item or activity (e.g., minibar, in-room movie, spouse's travel, laundry without business justification)?",
+      "instructions": "Does the category and description honestly reflect what the money was spent on, without mislabelling?",
       "criteria": {
-        "true": "The description includes a personal item or activity that is typically not reimbursable under company policy.",
-        "false": "The description does not mention any personal items or activities, or it only describes business-related expenses."
+        "true": "The category or description is dishonest or mislabelled.",
+        "false": "The category and description are honest."
       },
       "violation": {
         "when_true": true,
         "options": null,
         "at_or_above": null
       },
-      "lo": 0.15,
-      "hi": 0.55,
+      "lo": 0.2,
+      "hi": 0.5,
       "when": null,
       "dev": {
-        "n": 26,
-        "accuracy": 0.7692,
-        "brier": 0.1131,
+        "n": 27,
+        "accuracy": 0.7778,
+        "brier": 0.1466,
         "candidates": 5
+      }
+    },
+    {
+      "id": "personal_costs_judgement",
+      "rule_id": "personal_costs_not_reimbursed",
+      "type": "noul",
+      "instructions": "Is the expense for a personal cost (e.g., minibar, in-room films, laundry on a trip under five days, travel for family members)?",
+      "criteria": {
+        "true": "The expense is for a personal cost.",
+        "false": "The expense is not for a personal cost."
+      },
+      "violation": {
+        "when_true": true,
+        "options": null,
+        "at_or_above": null
+      },
+      "lo": 0.2,
+      "hi": 0.5,
+      "when": null,
+      "dev": {
+        "n": 24,
+        "accuracy": 0.875,
+        "brier": 0.1075,
+        "candidates": 1
       }
     },
     {
@@ -332,12 +443,12 @@
         "at_or_above": null
       },
       "lo": 0.5,
-      "hi": 0.5,
+      "hi": 0.55,
       "when": null,
       "dev": {
-        "n": 48,
-        "accuracy": 1.0,
-        "brier": 0.0832,
+        "n": 46,
+        "accuracy": 0.9565,
+        "brier": 0.1019,
         "candidates": 1
       }
     }
@@ -350,7 +461,6 @@
     }
   },
   "unenforced": {
-    "hotel_nights_work_only": "check hotel_nights_work_only_check was right on 8 of 13 practice cases",
-    "honest_description": "question honest_description_judgement was right on 72% of 29 practice cases"
+    "big_trips_approval": "check big_trips_approval_check was right on 14 of 20 practice cases"
   }
 }

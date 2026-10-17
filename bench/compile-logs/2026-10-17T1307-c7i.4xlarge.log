@@ -1,0 +1,7 @@
+decider: {'status': 'ok', 'model': 'strands-decider-2B-qwen3.5-v1-2610', 'checkpoint': 'StrandsAgents/strands-decider-2B-qwen3.5-v1-2610', 'base_model': 'Qwen/Qwen3.5-2B-Base', 'num_slots': 24, 'max_length': 4096, 'temperature': 1.0545210242263665, 'device': 'cpu', 'prefix_cache': True}
+[compile 13:07:10] reading the policy
+[compile 13:07:43] 17 rules, 13 checks, 7 questions; writing cases
+[compile 13:10:56] 136 practice cases; tuning questions on the Decider
+[compile 13:15:48] repairing checks
+wrote packs/northwind.pack.json (pack 5ef2bf9a8cdf): 17 rules, 13 checks, 7 questions, 136 dev cases
+wrote 160 held-out cases to data/heldout/generated.jsonl. Review every label before benchmarking.
