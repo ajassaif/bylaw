@@ -9,7 +9,7 @@ WorkingDirectory=/opt/bylaw
 EnvironmentFile=/etc/bylaw.env
 # `serve` binds 127.0.0.1 by default and has no authentication. Never add --host 0.0.0.0:
 # only the Bylaw app on this machine may talk to it.
-ExecStart=/opt/bylaw/.venv/bin/strands-decider serve StrandsAgents/strands-decider-2B-qwen3.5-v1-2610 --device cuda --port 8099
+ExecStart=/opt/bylaw/.venv/bin/strands-decider serve StrandsAgents/strands-decider-2B-qwen3.5-v1-2610 --device ${BYLAW_DEVICE} --port 8099
 Restart=on-failure
 RestartSec=5
 TimeoutStartSec=900
