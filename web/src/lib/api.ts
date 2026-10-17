@@ -29,7 +29,7 @@ export type Receipt = {
   error: string | null;
   at: string;
 };
-export type Employee = { id: string; name: string; title: string; level: string };
+export type Employee = { id: string; name: string; title: string; level: string; manager?: string | null };
 export type Health = { decider: { status?: string; device?: string; checkpoint?: string }; pack_hash: string; model: string };
 
 export type SystemSummary = {

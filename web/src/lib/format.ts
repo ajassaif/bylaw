@@ -25,3 +25,19 @@ export function clauseOf(text: string): string | null {
   const m = text.match(/\b(\d+\.\d+)\b/);
   return m ? m[1] : null;
 }
+
+const FAMILIES: [RegExp, (m: RegExpMatchArray) => string][] = [
+  [/claude-(haiku|sonnet|opus)-(\d+)-(\d+)/, (m) => `Claude ${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}.${m[3]}`],
+  [/nova-(pro|lite|micro|premier)/, (m) => `Amazon Nova ${m[1][0].toUpperCase()}${m[1].slice(1)}`],
+];
+
+export function systemName(system: string): string {
+  if (system === "bylaw") return "Bylaw, Decider alone";
+  if (system === "bylaw+hybrid") return "Bylaw, Bedrock when unsure";
+  const id = system.replace(/^llm:/, "");
+  for (const [re, name] of FAMILIES) {
+    const m = id.match(re);
+    if (m) return `${name(m)} alone`;
+  }
+  return `${id.replace(/^(us|eu|apac|global)\./, "").replace(/-v\d+(:\d+)?$/, "")} alone`;
+}
