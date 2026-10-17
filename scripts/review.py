@@ -34,7 +34,11 @@ def show(cases: list[Case]) -> str:
 
 def merge(generated: list[Case], handwritten: list[Case], review: dict) -> list[Case]:
     out: list[Case] = []
+    tag_prefixes: dict[str, str] = review.get("_tags", {})
     for c in generated:
+        extra = [tag for prefix, tag in tag_prefixes.items() if c.id.startswith(prefix) and tag not in c.tags]
+        if extra:
+            c = c.model_copy(update={"tags": [*c.tags, *extra]})
         decision = review.get(c.id)
         if isinstance(decision, str) and decision.startswith("drop"):
             continue
@@ -56,8 +60,9 @@ def main(argv: list[str]) -> None:
         review = json.loads(Path(review_path).read_text(encoding="utf-8"))
         merged = merge(load_cases(generated), load_cases(handwritten), review)
         save_cases(merged, out)
-        dropped = sum(1 for v in review.values() if isinstance(v, str))
-        print(f"{len(merged)} cases ({len(review) - dropped} relabelled, {dropped} dropped)")
+        decisions = {k: v for k, v in review.items() if not k.startswith("_")}
+        dropped = sum(1 for v in decisions.values() if isinstance(v, str))
+        print(f"{len(merged)} cases ({len(decisions) - dropped} relabelled, {dropped} dropped)")
 
 
 if __name__ == "__main__":

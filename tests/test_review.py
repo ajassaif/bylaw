@@ -25,3 +25,9 @@ def test_show_is_compact(tmp_path):
     assert text.startswith("c0 | maya | submit_expense")
     assert "-> deny (alcohol)" in text and '"description": "wine"' in text
     assert json.loads(json.dumps(text))  # plain text, no objects
+
+
+def test_merge_tags_by_prefix():
+    gen = [c.model_copy(update={"id": f"heldout-2-6-{i}", "tags": ["x"]}) for i, c in enumerate(CASES[:2])]
+    out = merge(gen, [], {"_tags": {"heldout-2-6-": "manipulation"}})
+    assert all("manipulation" in c.tags for c in out)
