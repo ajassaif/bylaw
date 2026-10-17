@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 sha=$(git rev-parse --short HEAD)
-(cd web && npm ci --silent && npm run build --silent)
+(cd web && { [ -d node_modules ] || npm ci --silent; } && npm run build --silent)
 mkdir -p dist
 git archive --format=tar --prefix=bylaw/ HEAD > "dist/bylaw-$sha.tar"
 tar --append --file="dist/bylaw-$sha.tar" --transform 's,^web/dist,bylaw/web/dist,' web/dist
