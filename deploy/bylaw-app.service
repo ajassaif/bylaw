@@ -1,0 +1,17 @@
+[Unit]
+Description=Bylaw workbench and travel desk
+After=bylaw-decider.service
+Wants=bylaw-decider.service
+
+[Service]
+User=bylaw
+WorkingDirectory=/opt/bylaw
+EnvironmentFile=/etc/bylaw.env
+# Listens on all interfaces so CloudFront can reach it; the security group only admits the
+# CloudFront origin-facing prefix list on 8080. BYLAW_DEMO_PASS gates every route but /api/health.
+ExecStart=/opt/bylaw/.venv/bin/bylaw serve --host 0.0.0.0 --port 8080 --pack ${BYLAW_PACK} --region ${BYLAW_REGION} --results /opt/bylaw/bench/results --web /opt/bylaw/web/dist
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

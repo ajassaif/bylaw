@@ -1,0 +1,30 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InvokeChosenBedrockModels",
+      "Effect": "Allow",
+      "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+      "Resource": [
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-*",
+        "arn:aws:bedrock:*::foundation-model/amazon.nova-*",
+        "arn:aws:bedrock:*::foundation-model/meta.llama*",
+        "arn:aws:bedrock:__REGION__:__ACCOUNT__:inference-profile/us.anthropic.claude-*",
+        "arn:aws:bedrock:__REGION__:__ACCOUNT__:inference-profile/us.amazon.nova-*",
+        "arn:aws:bedrock:__REGION__:__ACCOUNT__:inference-profile/us.meta.llama*"
+      ]
+    },
+    {
+      "Sid": "ReadReleases",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::__BUCKET__/releases/*"
+    },
+    {
+      "Sid": "WriteResults",
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::__BUCKET__/results/*"
+    }
+  ]
+}
