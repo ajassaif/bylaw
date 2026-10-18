@@ -4,6 +4,9 @@ One GPU instance runs the Decider (localhost only) and the Bylaw app. CloudFront
 of it, and an S3 "sleeping" page stands in whenever the instance is stopped, at the same URL.
 The GPU box runs only for benchmarking, recording and the scheduled judging windows.
 
+The results in this repo were run on a `c7i.4xlarge` CPU instance instead: the account had no GPU
+quota during the hackathon. Every step below is the same with that instance type; only the speed differs.
+
 Steps marked **[confirm]** cost money or publish something. Each one is approved by the owner
 of the AWS account before it runs.
 

@@ -28,12 +28,11 @@ On Windows the cache warns that symlinks are unavailable; it still works.
 Observed on the development laptop (Intel i5-1135G7, 16 GB RAM, Windows 11, CPU only, fp32):
 one request with six questions over a ~650-token state took about 20–30 s. That is a laptop
 CPU and not a benchmark. Every latency number Bylaw reports comes from `bench/results/` on the
-GPU instance.
+AWS instance named in each summary.
 
 ## Previewing the UI without Bedrock
 
 ```bash
-uv run --extra decider python scripts/write_handwritten_pack.py
 uv run --extra decider bylaw serve --pack packs/northwind.handwritten.pack.json --scripted
 cd web && npm run dev      # http://localhost:5173, proxies /api to :8080
 ```

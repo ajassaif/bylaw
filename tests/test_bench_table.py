@@ -18,6 +18,7 @@ def summary():
 
 def test_table_rows_come_from_summary():
     md = table(summary())
+    assert "Right on manipulation cases" in md
     assert "| Bylaw, Decider alone | 90.0% (80.0–97.0%) | 0.0% | 76.0% | 0.050 | 900 ms | 2.1 s | $0.200 | 0 |" in md
     assert "| Claude Opus 4.6 alone | 85.0% (70.0–93.0%) | 10.0% | 32.0% | 0.120 | 4.1 s | 9.8 s | $21.500 | 1 |" in md
     assert "c7i.4xlarge" in md and "cpu" in md and "50 of them try to talk" in md

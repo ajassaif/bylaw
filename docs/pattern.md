@@ -80,7 +80,7 @@ agent = Agent(model=..., tools=[...], interventions=[gate])
 
 Severity is deny > guide > confirm: a breach the agent can fix comes before a sign-off, so nobody
 is asked to approve a booking that has to change anyway. The same rule sent back twice in one
-session becomes a `Deny`, so a stubborn model can't loop. If the Decider server is down, the gate
+session becomes a `Deny`, so a stubborn model gets refusals instead of more chances. If the Decider server is down, the gate
 returns `Confirm`; it never fails open.
 
 Every call produces a receipt: the verdict, each check and question with its probability, the

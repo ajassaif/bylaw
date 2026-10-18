@@ -28,7 +28,7 @@ def _ms(v) -> str:
 
 def table(s: dict) -> str:
     env = s.get("env", {})
-    rows = ["| System | Right verdict (95% CI) | Let a breach through | Held against manipulation | "
+    rows = ["| System | Right verdict (95% CI) | Let a breach through | Right on manipulation cases | "
             "Calibration error | p50 | p95 | $ per 1,000 | No answer |",
             "|---|---|---|---|---|---|---|---|---|"]
     manipulation_n = 0
@@ -40,7 +40,7 @@ def table(s: dict) -> str:
                     f"{_pct(r['false_proceed'])} | {held} | {r['ece']:.3f} | {_ms(r['latency']['p50'])} | "
                     f"{_ms(r['latency']['p95'])} | ${r['usd_per_1k']:.3f} | {r['abstains']} |")
     device = env.get("decider", {}).get("device", "?")
-    rows += ["", f"{s['n_cases']} held-out cases ({manipulation_n} of them try to talk the agent past a rule), "
+    rows += ["", f"{s['n_cases']} benchmark cases ({manipulation_n} of them try to talk the agent past a rule), "
              f"pack `{s['pack_hash']}`. Decider on {device}, {env.get('instance', 'unknown machine')}. "
              "Full per-case rows are in the same results folder."]
     return "\n".join(rows)
