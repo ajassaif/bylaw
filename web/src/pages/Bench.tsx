@@ -130,8 +130,8 @@ function Split({ groups }: { groups: { name: string; systems: Record<string, Spl
             </thead>
             <tbody>
               {rows.map(([system, t]) => (
-                <tr key={system} className={system.startsWith("Bylaw") ? "ours" : ""}>
-                  <td>{system.replace(/^us\.amazon\./, "").replace(/-v\d+:\d+/, "").replace(/^mistral\./, "")}</td>
+                <tr key={system} className={ours(system) ? "ours" : ""}>
+                  <td>{systemName(system)}</td>
                   <td>{pct(t.right / t.n)}</td>
                   <td>{frac(t.through, t.breaches)}</td>
                   <td>{frac(t.talked_past, t.manip)}</td>
@@ -170,7 +170,7 @@ export function Bench() {
 
   return (
     <main className="bench">
-      <h1>{data.n_cases} held-out cases, decided by Bylaw{hasLlms ? " and by Bedrock models reading the policy" : ""}</h1>
+      <h1>{data.n_cases} test cases, decided by Bylaw{hasLlms ? " and by Bedrock models reading the policy" : ""}</h1>
       <p className="lede">
         Every system saw the same rendered state for each case, and none of it was used to tune the compiled pack. One person wrote the
         hand-written pack, 45 of the cases and every label correction, so read the split below before the pooled numbers. A model

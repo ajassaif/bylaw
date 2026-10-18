@@ -27,12 +27,18 @@ def origin(case: dict) -> str:
     return GROUPS[0] if case.get("review") == "kept" else GROUPS[1]
 
 
+PRETTY = {"bylaw:handwritten": "Bylaw, hand-written pack", "bylaw:compiled": "Bylaw, compiled pack",
+          "bylaw:compiled+hybrid": "Bylaw, compiled pack, Bedrock when unsure",
+          "llm:us.amazon.nova-pro-v1:0": "Amazon Nova Pro alone", "llm:us.amazon.nova-lite-v1:0": "Amazon Nova Lite alone",
+          "llm:mistral.mistral-large-3-675b-instruct": "Mistral Large 3 alone"}
+
+
 def system_name(run: Path, system: str) -> str:
-    if system == "bylaw":
-        return "Bylaw, hand-written pack" if "handwritten" in run.name else "Bylaw, compiled pack"
-    if system == "bylaw+hybrid":
-        return "Bylaw, compiled pack, Bedrock when unsure"
-    return system.removeprefix("llm:") + " alone"
+    """The key the bench page uses (see bench/results/current.json)."""
+    if system.startswith("bylaw"):
+        pack = "handwritten" if "handwritten" in run.name else "compiled"
+        return f"bylaw:{pack}" + ("+hybrid" if system == "bylaw+hybrid" else "")
+    return system
 
 
 def tally(runs: list[Path]) -> dict[tuple[str, str], dict[str, int]]:
@@ -62,7 +68,7 @@ def table(runs: list[Path]) -> str:
     data = tally(runs)
     lines = []
     for group in GROUPS:
-        rows = sorted((s, t) for (g, s), t in data.items() if g == group)
+        rows = sorted((PRETTY.get(s, s), t) for (g, s), t in data.items() if g == group)
         if not rows:
             continue
         n = rows[0][1]["n"]
