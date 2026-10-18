@@ -62,7 +62,10 @@ class DeciderClient:
             wall_ms = (time.perf_counter() - started) * 1000
         if response.status_code != 200:
             raise self._unavailable(f"HTTP {response.status_code}: {response.text[:200]}")
-        payload = response.json()
+        try:
+            payload = response.json()
+        except ValueError as exc:  # a proxy or error page answering 200
+            raise self._unavailable(f"not JSON: {response.text[:120]}") from exc
         return AskResult(
             answers=payload.get("answers", {}),
             latency_ms=float(payload.get("latency_ms") or wall_ms),

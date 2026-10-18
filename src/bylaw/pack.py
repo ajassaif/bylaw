@@ -103,6 +103,7 @@ class Pack(BaseModel):
             if item.rule_id not in rules:
                 raise ValueError(f"{item.id} refers to unknown rule {item.rule_id}")
         for c in self.checks:
+            expr.validate(c.expr)  # a compiled pack never carries a check outside the language
             if c.tools and not set(c.tools) <= set(rules[c.rule_id].tools):
                 raise ValueError(f"check {c.id} names tools outside its rule {c.rule_id}")
         return self

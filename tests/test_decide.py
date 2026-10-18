@@ -32,7 +32,7 @@ def test_violation_probability_each_type():
 
 
 def test_check_violation_beats_clear_questions():
-    p = pack([rule("r1"), rule("r2")], [noul_q("q2", "r2")], [Check(id="c1", rule_id="r1", expr="x", description="d")])
+    p = pack([rule("r1"), rule("r2")], [noul_q("q2", "r2")], [Check(id="c1", rule_id="r1", expr="args.x", description="d")])
     v = decide(p, TOOL, {"c1": True}, {"q2": {"noul": 0.05}})
     assert (v.action, v.rule_id, v.confidence, v.uncertain) == ("guide", "r1", 1.0, False)
     assert v.message == "Fix r1."
@@ -54,7 +54,7 @@ def test_uncertain_band_goes_to_confirm():
 
 
 def test_unknown_check_is_uncertain():
-    p = pack([rule("r1")], checks=[Check(id="c1", rule_id="r1", expr="x", description="d")])
+    p = pack([rule("r1")], checks=[Check(id="c1", rule_id="r1", expr="args.x", description="d")])
     v = decide(p, TOOL, {"c1": None}, {})
     assert (v.action, v.uncertain) == ("confirm", True)
     assert v.findings[0].status == "uncertain"
@@ -62,7 +62,7 @@ def test_unknown_check_is_uncertain():
 
 def test_all_clear_proceeds_with_min_confidence():
     p = pack([rule("r1"), rule("r2")], [noul_q("q1", "r1"), noul_q("q2", "r2")],
-             [Check(id="c1", rule_id="r1", expr="x", description="d")])
+             [Check(id="c1", rule_id="r1", expr="args.x", description="d")])
     v = decide(p, TOOL, {"c1": False}, {"q1": {"noul": 0.1}, "q2": {"noul": 0.02}})
     assert (v.action, v.rule_id, v.message, v.uncertain) == ("proceed", None, "", False)
     assert v.confidence == pytest.approx(0.9)

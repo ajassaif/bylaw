@@ -13,6 +13,7 @@ not a pass: `evaluate` returns None ("unknown"), and the decision table treats t
 from __future__ import annotations
 
 import ast
+import math
 import operator
 from collections.abc import Callable, Mapping
 from datetime import date
@@ -43,14 +44,14 @@ def _days_between(a: Any, b: Any) -> int:
 def _num(x: Any) -> float:
     if isinstance(x, bool):
         raise _Unknown
-    if isinstance(x, int | float):
-        return float(x)
     if isinstance(x, str):
         try:
-            return float(x.strip())
+            x = float(x.strip())
         except ValueError as exc:
             raise _Unknown from exc
-    raise _Unknown
+    if isinstance(x, int | float) and math.isfinite(x):
+        return float(x)
+    raise _Unknown  # missing, mistyped, NaN or infinite: never a value a cap can be compared with
 
 
 def _len(x: Any) -> int:
@@ -83,6 +84,7 @@ FUNCS: dict[str, Callable[..., Any]] = {
     "or_else": lambda x, d: x,
 }
 LAZY = {"present", "or_else"}
+ARITY = {"days_between": 2, "num": 1, "len": 1, "lower": 1, "count_where": 3, "present": 1, "or_else": 2}
 
 _BINOPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
 _CMPOPS = {
@@ -128,9 +130,9 @@ def _normalize(expr: str) -> str:
 def _parse(expr: str) -> ast.Expression:
     try:
         tree = ast.parse(_normalize(expr).strip(), mode="eval")
-    except SyntaxError as exc:
-        raise ExprError(f"not a valid expression: {expr!r}") from exc
-    _check(tree.body)
+        _check(tree.body)
+    except (SyntaxError, RecursionError, MemoryError) as exc:
+        raise ExprError(f"not a valid expression: {expr[:80]!r}") from exc
     return tree
 
 
@@ -160,7 +162,7 @@ def _check(node: ast.AST) -> None:
         case ast.List(elts=elts) | ast.Tuple(elts=elts):
             for e in elts:
                 _check(e)
-        case ast.Call(func=ast.Name(id=name), args=args, keywords=[]) if name in FUNCS:
+        case ast.Call(func=ast.Name(id=name), args=args, keywords=[]) if name in FUNCS and len(args) == ARITY[name]:
             for a in args:
                 _check(a)
         case _:
@@ -226,7 +228,15 @@ def _eval(node: ast.AST, env: Mapping[str, Any]) -> Any:
     raise ExprError(f"unexpected node {type(node).__name__}")  # unreachable after _check
 
 
+def _is_number(x: Any) -> bool:
+    return isinstance(x, int | float) and not isinstance(x, bool)
+
+
 def _apply(fn: Callable[..., Any], *values: Any) -> Any:
+    # Arithmetic is on numbers only: "ab" * 10**11 would otherwise try to build a huge string.
+    if fn in _BINOPS.values() or fn is operator.neg:
+        if not all(_is_number(v) for v in values):
+            raise _Unknown
     try:
         return fn(*values)
     except (TypeError, ValueError, ZeroDivisionError) as exc:
@@ -256,5 +266,5 @@ def evaluate(expr: str, env: Mapping[str, Any]) -> bool | None:
     tree = _parse(expr)
     try:
         return bool(_eval(tree.body, env))
-    except _Unknown:
+    except (_Unknown, RecursionError, OverflowError):
         return None

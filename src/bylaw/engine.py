@@ -11,9 +11,12 @@ from typing import Protocol
 
 from bylaw import expr
 from bylaw.decide import Verdict, decide
-from bylaw.decider import to_wire
+from bylaw.decider import DeciderUnavailable, to_wire
 from bylaw.pack import Pack, pack_hash
 from bylaw.state import render_state
+
+
+UNAVAILABLE = "The policy check is unavailable right now, so a person needs to approve this booking."
 
 
 class Escalator(Protocol):
@@ -43,27 +46,49 @@ class Receipt:
         return dataclasses.asdict(self)
 
 
+def _safe(expression: str, env: dict) -> bool | None:
+    """A check that raises for any reason is unknown, which sends the call to a person."""
+    try:
+        return expr.evaluate(expression, env)
+    except Exception:  # noqa: BLE001 - fail closed, never open
+        return None
+
+
 def evaluate_call(pack: Pack, decider, tool: str, args: dict, context: dict,
                   conversation: list[tuple[str, str]], escalator: Escalator | None = None) -> Receipt:
     """Checks in code, every question in one Decider request, then the decision table.
-    `DeciderUnavailable` propagates: the caller decides how to fail closed."""
+
+    If the Decider is unreachable, the questions count as unanswered: a breach the code checks
+    found still decides, and otherwise a person signs off. Bedrock is not asked in that case.
+    """
     started = time.perf_counter()
     state = render_state(conversation, tool, args, context)
     env = {"args": args, "ctx": context, "tables": pack.tables}
-    check_results = {c.id: expr.evaluate(c.expr, env) for c in pack.checks_for(tool)}
+    check_results = {c.id: _safe(c.expr, env) for c in pack.checks_for(tool)}
 
-    asked = [q for q in pack.questions_for(tool) if q.when is None or expr.evaluate(q.when, env) is not False]
+    asked = [q for q in pack.questions_for(tool) if q.when is None or _safe(q.when, env) is not False]
     questions = {q.id: to_wire(q) for q in asked}
     answers: dict[str, dict] = {}
     decider_ms = None
     tokens = 0
+    errors: list[str] = []
     if questions:
-        result = decider.ask(state, questions)
-        answers, decider_ms, tokens = result.answers, result.latency_ms, result.input_tokens
+        try:
+            result = decider.ask(state, questions)
+            answers, decider_ms, tokens = result.answers, result.latency_ms, result.input_tokens
+        except DeciderUnavailable as exc:
+            errors.append(str(exc))
 
     verdict = decide(pack, tool, check_results, answers, skipped={q.id for q in pack.questions_for(tool)} - set(questions))
-    escalation = escalator.judge(state, tool) if verdict.uncertain and escalator is not None else None
+    escalation = None
+    if verdict.uncertain and errors:
+        verdict = dataclasses.replace(verdict, message=UNAVAILABLE)
+    elif verdict.uncertain and escalator is not None:
+        try:
+            escalation = escalator.judge(state, tool)
+        except Exception as exc:  # noqa: BLE001 - a throttled or failing reviewer leaves it with a person
+            errors.append(f"reviewer model failed: {exc}")
     return Receipt(tool=tool, args=args, verdict=verdict, decider_ms=decider_ms,
                    total_ms=(time.perf_counter() - started) * 1000, input_tokens=tokens,
                    pack_hash=pack_hash(pack), escalated=escalation is not None, escalation=escalation,
-                   answers=answers)
+                   error="; ".join(errors) or None, answers=answers)

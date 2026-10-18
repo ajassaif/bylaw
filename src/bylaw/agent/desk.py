@@ -9,7 +9,7 @@ from strands.models import BedrockModel
 
 from bylaw import config
 from bylaw.agent.session import Session
-from bylaw.agent.tools import make_tools
+from bylaw.agent.tools import TOOL_SCHEMAS, make_tools
 from bylaw.engine import Escalator, Receipt
 from bylaw.gate import PolicyGate
 from bylaw.pack import Pack
@@ -30,7 +30,8 @@ def build_desk(pack: Pack, decider, session: Session, model_id: str = config.AGE
                escalator: Escalator | None = None, on_receipt: Callable[[Receipt], None] | None = None,
                region: str = config.REGION) -> Agent:
     gate = PolicyGate(pack, decider, context_provider=session.context, escalator=escalator,
-                      on_receipt=on_receipt, facts_provider=session.facts_for)
+                      on_receipt=on_receipt, facts_provider=session.facts_for,
+                      schemas=TOOL_SCHEMAS)
     prompt = SYSTEM_PROMPT.format(name=session.employee["name"], title=session.employee["title"],
                                   today=session.today)
     return Agent(model=BedrockModel(model_id=model_id, region_name=region, temperature=0.2),

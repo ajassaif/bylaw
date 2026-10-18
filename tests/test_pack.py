@@ -72,12 +72,12 @@ def test_question_rule_must_exist():
 def test_check_tools_narrow_a_multi_tool_rule():
     rule = Rule(id="trip", text="6.1", tools=["book_flight", "book_hotel"], on_violation="confirm", remedy="r")
     pack = make_pack(rules=[rule], questions=[], checks=[
-        Check(id="f", rule_id="trip", expr="x", description="d", tools=["book_flight"]),
-        Check(id="h", rule_id="trip", expr="x", description="d", tools=["book_hotel"]),
-        Check(id="both", rule_id="trip", expr="x", description="d"),
+        Check(id="f", rule_id="trip", expr="args.x", description="d", tools=["book_flight"]),
+        Check(id="h", rule_id="trip", expr="args.x", description="d", tools=["book_hotel"]),
+        Check(id="both", rule_id="trip", expr="args.x", description="d"),
     ])
     assert [c.id for c in pack.checks_for("book_flight")] == ["f", "both"]
     assert [c.id for c in pack.checks_for("book_hotel")] == ["h", "both"]
     with pytest.raises(ValidationError):
         make_pack(rules=[rule], questions=[], checks=[
-            Check(id="bad", rule_id="trip", expr="x", description="d", tools=["submit_expense"])])
+            Check(id="bad", rule_id="trip", expr="args.x", description="d", tools=["submit_expense"])])
