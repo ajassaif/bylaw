@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clauseOf, ms, pct, verdictMark } from "./format";
+import { clauseOf, ms, pct, systemName, verdictMark } from "./format";
 
 describe("format", () => {
   it("pct rounds to a whole percent", () => {
@@ -38,5 +38,13 @@ describe("systemName", () => {
     expect(systemName("llm:us.amazon.nova-pro-v1:0")).toBe("Amazon Nova Pro alone");
     expect(systemName("llm:mistral.mistral-large-3-675b-instruct")).toBe("Mistral Large 3 alone");
     expect(systemName("llm:us.meta.llama3-3-70b-instruct-v1:0")).toBe("meta.llama3-3-70b-instruct alone");
+  });
+});
+
+describe("systemName", () => {
+  it("names each pack so a hand-written pack is never shown as compiled", () => {
+    expect(systemName("bylaw:handwritten")).toBe("Bylaw, hand-written pack");
+    expect(systemName("bylaw:compiled")).toBe("Bylaw, compiled pack");
+    expect(systemName("bylaw:compiled+hybrid")).toBe("Bylaw, compiled pack, Bedrock when unsure");
   });
 });

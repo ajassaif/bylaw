@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { get, NotFound, type BenchSummary, type SystemSummary } from "../lib/api";
+import { get, NotFound, type BenchSummary, type SplitCounts, type SystemSummary } from "../lib/api";
 import { ms, pct, systemName } from "../lib/format";
 
 const OURS = "var(--series-ours)";
@@ -106,6 +106,46 @@ function RiskCoverage({ rows }: { rows: Row[] }) {
   );
 }
 
+const frac = (a: number, b: number) => `${a} of ${b}`;
+
+/** The same results, split by where each case's label came from. */
+function Split({ groups }: { groups: { name: string; systems: Record<string, SplitCounts> }[] }) {
+  return (
+    <section aria-labelledby="split-h">
+      <h2 id="split-h">Where the labels came from</h2>
+      <p className="lede">
+        DeepSeek wrote 152 cases from the policy alone. On review I kept 97 of its labels and corrected 55, most of them breaches it
+        had missed: a trip passing $3,000 with no recorded approval, a booking inside 14 days with no reason. I wrote the other 45.
+        On the 97 untouched cases the Bedrock models get more verdicts exactly right; across every group, the hand-written pack lets
+        no breach through.
+      </p>
+      {groups.map((g) => {
+        const rows = Object.entries(g.systems);
+        const n = rows[0]?.[1].n ?? 0;
+        return (
+          <table className="results" key={g.name}>
+            <caption>{g.name}, {n} cases</caption>
+            <thead>
+              <tr><th scope="col">System</th><th scope="col">Right verdict</th><th scope="col">Let a breach through</th><th scope="col">Talked into a breach</th><th scope="col">Clean cases sent to a person</th></tr>
+            </thead>
+            <tbody>
+              {rows.map(([system, t]) => (
+                <tr key={system} className={system.startsWith("Bylaw") ? "ours" : ""}>
+                  <td>{system.replace(/^us\.amazon\./, "").replace(/-v\d+:\d+/, "").replace(/^mistral\./, "")}</td>
+                  <td>{pct(t.right / t.n)}</td>
+                  <td>{frac(t.through, t.breaches)}</td>
+                  <td>{frac(t.talked_past, t.manip)}</td>
+                  <td>{frac(t.clean_to_person, t.clean)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      })}
+    </section>
+  );
+}
+
 export function Bench() {
   const [data, setData] = useState<BenchSummary | null>(null);
   const [missing, setMissing] = useState(false);
@@ -118,7 +158,7 @@ export function Bench() {
     return (
       <main className="bench">
         <h1>No benchmark results yet</h1>
-        <p className="lede">Run <code>bylaw bench</code> on the GPU instance. Its summary.json shows up here, and every number on this page comes from that file.</p>
+        <p className="lede">Run <code>bylaw bench</code>. Its summary.json shows up here, and every number on this page comes from that file.</p>
       </main>
     );
   if (!data) return <main className="bench"><p className="lede">Loading results…</p></main>;
@@ -132,8 +172,9 @@ export function Bench() {
     <main className="bench">
       <h1>{data.n_cases} held-out cases, decided by Bylaw{hasLlms ? " and by Bedrock models reading the policy" : ""}</h1>
       <p className="lede">
-        Every system saw the same rendered state for each case. None of these cases were used to tune the pack. A model that never
-        produced a usable answer is counted as wrong.
+        Every system saw the same rendered state for each case, and none of it was used to tune the compiled pack. One person wrote the
+        hand-written pack, 45 of the cases and every label correction, so read the split below before the pooled numbers. A model
+        that never produced a usable answer is counted as wrong.
         {!hasLlms && " This run has no Bedrock rows: it was scored without language models."}
       </p>
 
@@ -173,9 +214,11 @@ export function Bench() {
                   note="Per decision. Log scale. Bylaw's time is the Decider call plus the code checks." />
         {rows.some((r) => r.s.usd_per_1k > 0) && <BarChart rows={rows.filter((r) => r.s.usd_per_1k > 0)} value={(s) => s.usd_per_1k} format={(v) => `$${v.toFixed(3)}`} log
                   caption="Cost per 1,000 decisions"
-                  note="Bedrock at on-demand token prices; Bylaw at the GPU instance's hourly price spread over measured decision time." />}
+                  note="Bedrock at on-demand token prices; Bylaw at the instance's hourly price spread over measured decision time, as if it were busy all the time." />}
         {rows.some((r) => r.s.risk_coverage.length) && <RiskCoverage rows={rows} />}
       </div>
+
+      {data.split && <Split groups={data.split.groups} />}
 
       <p className="env">
         Pack {data.pack_hash}. Decider {String(decider.checkpoint ?? "?")} on {String(decider.device ?? "?")}, {String(env.instance ?? "unknown machine")}.

@@ -51,13 +51,15 @@ export default function App() {
   const up = health?.decider?.status !== "down" && !!health;
   const scripted = health?.model?.startsWith("scripted");
   const counts = data ? `${data.pack.checks.length} code checks and ${data.pack.questions.length} Decider questions` : "";
+  const author = data?.pack.models.author;
+  const made = author ? `written by hand as` : `compiled by ${data?.pack.models.compiler ?? "the compiler"} into`;
 
   return (
     <>
       <header className="masthead">
         <p className="wordmark">Bylaw</p>
         <p className="about">
-          {data ? `The Northwind travel and expense policy, compiled into ${counts}. Every booking the desk makes is checked against it first.` : "Loading the policy…"}
+          {data ? `The Northwind travel and expense policy, ${made} ${counts}. Every booking the desk makes is checked against it first.` : "Loading the policy…"}
         </p>
         <span className={`status ${health ? (up ? "is-up" : "is-down") : ""}`}>
           <span className="dot" aria-hidden="true" />

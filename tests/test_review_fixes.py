@@ -1,4 +1,6 @@
 """Regression tests for the whole-branch review: the gate fails closed on every error, never on a pass."""
+from types import SimpleNamespace
+
 
 import httpx
 import pytest
@@ -11,6 +13,7 @@ from bylaw.engine import evaluate_call
 from bylaw.gate import PolicyGate
 from bylaw.pack import Check, Pack, Rule
 from tests.fakes import FakeDecider
+from tests.test_api import paths  # noqa: F401 - fixture
 from tests.test_gate import CTX, event, make_pack
 
 SCHEMAS = {
@@ -105,3 +108,76 @@ def test_decider_down_without_a_code_breach_still_asks_a_person():
     gate = PolicyGate(make_pack(), FakeDecider.down(), context_provider=lambda: CTX)
     action = gate.before_tool_call(event("submit_expense", {"amount_usd": 40}))
     assert isinstance(action, Confirm) and "policy check is unavailable" in action.prompt
+
+
+# I3: the proposed call survives however long the profile and arguments get.
+
+def test_state_stays_inside_the_window_and_keeps_the_call():
+    from bylaw.state import CALL, render_state
+    ledger = [{"id": f"b{i}", "kind": "hotel", "usd": 120, "note": "x" * 80} for i in range(40)]
+    context = {"employee": {"name": "Maya"}, "trip": {"bookings": ledger, "total_usd": 4800}}
+    state = render_state([("user", "hi"), ("assistant", "hello")], "submit_expense",
+                         {"description": "d" * 9000, "amount_usd": 80}, context)
+    assert len(state) <= 6000
+    assert CALL in state and "submit_expense" in state and '"amount_usd": 80' in state
+
+
+def test_dropped_turns_are_marked_not_hidden():
+    from bylaw.state import render_state
+    turns = [("user", "t" * 900)] * 20
+    state = render_state(turns, "book_hotel", {"hotel_id": "h"}, {"employee": {"name": "Maya"}})
+    assert "(earlier conversation omitted)" in state
+    assert "(no conversation yet)" not in state
+
+
+# I4: a turn that is still running blocks the next one, and turns never share events.
+
+def test_chat_refuses_a_second_turn_while_one_runs(paths):
+    import threading
+
+    from bylaw.api.app import create_app
+    from fastapi.testclient import TestClient
+    release = threading.Event()
+
+    class SlowAgent:
+        def __init__(self, session, on_receipt):
+            pass
+
+        def __call__(self, prompt):
+            release.wait(5)
+            return SimpleNamespace(stop_reason="end_turn", interrupts=[], text=f"done {prompt}")
+
+    pack, policy, results = paths
+    c = TestClient(create_app(pack, policy, results, FakeDecider.constant(0.1), SlowAgent, passcode="p",
+                              text_of=lambda r: r.text))
+    h = {"x-demo-pass": "p"}
+    sid = c.post("/api/sessions", json={"employee_id": "maya"}, headers=h).json()["session_id"]
+    first = threading.Thread(target=lambda: c.post("/api/chat", json={"session_id": sid, "message": "one"}, headers=h))
+    first.start()
+    import time
+    time.sleep(0.3)
+    assert c.post("/api/chat", json={"session_id": sid, "message": "two"}, headers=h).status_code == 409
+    release.set()
+    first.join(5)
+    second = c.post("/api/chat", json={"session_id": sid, "message": "three"}, headers=h)
+    assert "done three" in second.text and "done one" not in second.text
+
+
+# C1: the bench page shows the runs the README cites, not whichever folder sorts last.
+
+def test_bench_serves_the_runs_named_in_current_json(paths):
+    import json as _json
+
+    from tests.test_api import client
+    _, _, results = paths
+    for name, n, systems in (("a-compiled", 197, {"bylaw": {}, "llm:nova": {}}),
+                             ("b-handwritten", 197, {"bylaw": {}}), ("z-laptop", 45, {"bylaw": {}})):
+        (results / name).mkdir()
+        (results / name / "summary.json").write_text(_json.dumps({"n_cases": n, "systems": systems, "env": {}}))
+    (results / "current.json").write_text(_json.dumps(
+        {"runs": [{"dir": "a-compiled"}, {"dir": "b-handwritten", "rename": {"bylaw": "bylaw:handwritten"}}]}))
+    (results / "split.json").write_text(_json.dumps({"groups": []}))
+    body = client(paths).get("/api/bench", headers={"x-demo-pass": "letmein"}).json()
+    assert body["n_cases"] == 197
+    assert set(body["systems"]) == {"bylaw", "llm:nova", "bylaw:handwritten"}
+    assert body["split"] == {"groups": []}

@@ -47,12 +47,42 @@ class ApproveIn(BaseModel):
     approved: bool
 
 
+KEEPALIVE_S = 10  # CloudFront closes an origin response that sends nothing for 30 s
+
+
 class _Live:
     def __init__(self, session: Session) -> None:
         self.session = session
-        self.events: queue.Queue = queue.Queue()
-        self.lock = threading.Lock()
+        self.events: queue.Queue = queue.Queue()  # replaced per turn; receipts go to the current one
+        self.busy = threading.Lock()  # held by the agent thread for the whole turn
         self.agent: Any = None
+
+
+def _bench(results: Path) -> dict:
+    """The runs `current.json` names, merged into one table (systems renamed where two runs share a
+    name), plus `split.json` if present. Without `current.json`: the newest run alone."""
+    pointer = results / "current.json"
+    if pointer.exists():
+        spec = json.loads(pointer.read_text(encoding="utf-8"))["runs"]
+    else:
+        newest = sorted(results.glob("*/summary.json"))
+        if not newest:
+            raise HTTPException(404, "no benchmark results yet")
+        spec = [{"dir": newest[-1].parent.name}]
+    merged: dict[str, Any] = {}
+    for entry in spec:
+        summary = json.loads((results / entry["dir"] / "summary.json").read_text(encoding="utf-8"))
+        rename = entry.get("rename", {})
+        systems = {rename.get(k, k): v for k, v in summary.get("systems", {}).items()}
+        if not merged:
+            merged = {**summary, "systems": systems, "runs": [entry["dir"]]}
+        else:
+            merged["systems"].update(systems)
+            merged["runs"].append(entry["dir"])
+    split = results / "split.json"
+    if split.exists():
+        merged["split"] = json.loads(split.read_text(encoding="utf-8"))
+    return merged
 
 
 def _sse(name: str, data: Any) -> str:
@@ -98,25 +128,43 @@ def create_app(pack_path: Path, policy_path: Path, results_dir: Path, decider,
         return sessions[session_id]
 
     def stream(state: _Live, prompt: Any) -> Iterator[str]:
+        """Start a turn now (409 if one is running) and stream its events. A client that goes away
+        mid-turn leaves the turn to finish on its own queue; the next turn starts clean."""
+        if not state.busy.acquire(blocking=False):
+            raise HTTPException(409, "still working on the last request; wait for it to finish")
+        events: queue.Queue = queue.Queue()
+        state.events = events
+
         def run() -> None:
             try:
                 result = state.agent(prompt)
                 interrupts = list(getattr(result, "interrupts", None) or [])
                 if getattr(result, "stop_reason", None) == "interrupt" and interrupts:
                     for it in interrupts:
-                        state.events.put(("approval", {"interrupt_id": it.id, "prompt": str(it.reason)}))
+                        events.put(("approval", {"interrupt_id": it.id, "prompt": str(it.reason)}))
                 else:
-                    state.events.put(("reply", {"text": text_of(result)}))
+                    events.put(("reply", {"text": text_of(result)}))
             except Exception as exc:  # surfaced to the UI; the server keeps running
-                state.events.put(("error", {"message": f"{type(exc).__name__}: {exc}"[:300]}))
+                events.put(("error", {"message": f"{type(exc).__name__}: {exc}"[:300]}))
             finally:
-                state.events.put(DONE)
+                events.put(DONE)
+                state.busy.release()
 
-        with state.lock:  # one turn at a time per session
-            threading.Thread(target=run, daemon=True).start()
-            while (item := state.events.get()) is not DONE:
+        threading.Thread(target=run, daemon=True).start()
+
+        def frames() -> Iterator[str]:
+            while True:
+                try:
+                    item = events.get(timeout=KEEPALIVE_S)
+                except queue.Empty:
+                    yield ": still working\n\n"
+                    continue
+                if item is DONE:
+                    break
                 yield _sse(*item)
             yield _sse("done", {})
+
+        return frames()
 
     @app.get("/api/health")
     def health() -> dict:
@@ -142,10 +190,7 @@ def create_app(pack_path: Path, policy_path: Path, results_dir: Path, decider,
 
     @app.get("/api/bench", dependencies=guarded)
     def bench() -> dict:
-        runs = sorted(p for p in Path(results_dir).glob("*/summary.json"))
-        if not runs:
-            raise HTTPException(404, "no benchmark results yet")
-        return json.loads(runs[-1].read_text(encoding="utf-8"))
+        return _bench(Path(results_dir))
 
     @app.post("/api/sessions", dependencies=guarded)
     def new_session(body: NewSession) -> dict:

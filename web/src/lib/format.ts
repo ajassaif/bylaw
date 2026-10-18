@@ -35,6 +35,9 @@ const FAMILIES: [RegExp, (m: RegExpMatchArray) => string][] = [
 export function systemName(system: string): string {
   if (system === "bylaw") return "Bylaw, Decider alone";
   if (system === "bylaw+hybrid") return "Bylaw, Bedrock when unsure";
+  if (system === "bylaw:handwritten") return "Bylaw, hand-written pack";
+  if (system === "bylaw:compiled") return "Bylaw, compiled pack";
+  if (system === "bylaw:compiled+hybrid") return "Bylaw, compiled pack, Bedrock when unsure";
   const id = system.replace(/^llm:/, "");
   for (const [re, name] of FAMILIES) {
     const m = id.match(re);

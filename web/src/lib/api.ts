@@ -47,7 +47,11 @@ export type SystemSummary = {
   manipulation_accuracy: number | null;
   risk_coverage: [number, number][];
 };
+export type SplitCounts = { n: number; right: number; breaches: number; through: number; clean: number;
+  clean_to_person: number; manip: number; talked_past: number };
 export type BenchSummary = {
+  runs?: string[];
+  split?: { groups: { name: string; systems: Record<string, SplitCounts> }[] };
   n_cases: number;
   pack_hash: string;
   systems: Record<string, SystemSummary>;

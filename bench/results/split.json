@@ -1,0 +1,264 @@
+{
+  "groups": [
+    {
+      "name": "DeepSeek, label kept",
+      "systems": {
+        "Bylaw, compiled pack": {
+          "n": 97,
+          "right": 42,
+          "clean": 63,
+          "clean_to_person": 21,
+          "breaches": 34,
+          "through": 2,
+          "manip": 10,
+          "talked_past": 1
+        },
+        "Bylaw, compiled pack, Bedrock when unsure": {
+          "n": 97,
+          "right": 64,
+          "clean": 63,
+          "clean_to_person": 0,
+          "breaches": 34,
+          "through": 2,
+          "manip": 10,
+          "talked_past": 1
+        },
+        "Bylaw, hand-written pack": {
+          "n": 97,
+          "right": 42,
+          "clean": 63,
+          "clean_to_person": 47,
+          "breaches": 34,
+          "through": 0,
+          "manip": 10,
+          "talked_past": 0
+        },
+        "mistral.mistral-large-3-675b-instruct alone": {
+          "n": 97,
+          "right": 57,
+          "clean": 63,
+          "clean_to_person": 1,
+          "breaches": 34,
+          "through": 1,
+          "manip": 10,
+          "talked_past": 0
+        },
+        "us.amazon.nova-lite-v1:0 alone": {
+          "n": 97,
+          "right": 75,
+          "clean": 63,
+          "clean_to_person": 3,
+          "breaches": 34,
+          "through": 0,
+          "manip": 10,
+          "talked_past": 0
+        },
+        "us.amazon.nova-pro-v1:0 alone": {
+          "n": 97,
+          "right": 75,
+          "clean": 63,
+          "clean_to_person": 0,
+          "breaches": 34,
+          "through": 0,
+          "manip": 10,
+          "talked_past": 0
+        }
+      }
+    },
+    {
+      "name": "DeepSeek, relabelled",
+      "systems": {
+        "Bylaw, compiled pack": {
+          "n": 55,
+          "right": 22,
+          "breaches": 50,
+          "through": 4,
+          "clean": 5,
+          "clean_to_person": 2,
+          "manip": 19,
+          "talked_past": 0
+        },
+        "Bylaw, compiled pack, Bedrock when unsure": {
+          "n": 55,
+          "right": 23,
+          "breaches": 50,
+          "through": 4,
+          "clean": 5,
+          "clean_to_person": 0,
+          "manip": 19,
+          "talked_past": 0
+        },
+        "Bylaw, hand-written pack": {
+          "n": 55,
+          "right": 49,
+          "breaches": 50,
+          "through": 0,
+          "clean": 5,
+          "clean_to_person": 4,
+          "manip": 19,
+          "talked_past": 0
+        },
+        "mistral.mistral-large-3-675b-instruct alone": {
+          "n": 55,
+          "right": 3,
+          "breaches": 50,
+          "through": 6,
+          "clean": 5,
+          "clean_to_person": 0,
+          "manip": 19,
+          "talked_past": 1
+        },
+        "us.amazon.nova-lite-v1:0 alone": {
+          "n": 55,
+          "right": 4,
+          "breaches": 50,
+          "through": 10,
+          "clean": 5,
+          "clean_to_person": 1,
+          "manip": 19,
+          "talked_past": 2
+        },
+        "us.amazon.nova-pro-v1:0 alone": {
+          "n": 55,
+          "right": 8,
+          "breaches": 50,
+          "through": 8,
+          "clean": 5,
+          "clean_to_person": 0,
+          "manip": 19,
+          "talked_past": 2
+        }
+      }
+    },
+    {
+      "name": "Written by the pack's author",
+      "systems": {
+        "Bylaw, compiled pack": {
+          "n": 45,
+          "right": 24,
+          "clean": 16,
+          "clean_to_person": 4,
+          "breaches": 29,
+          "through": 2,
+          "manip": 9,
+          "talked_past": 0
+        },
+        "Bylaw, compiled pack, Bedrock when unsure": {
+          "n": 45,
+          "right": 28,
+          "clean": 16,
+          "clean_to_person": 0,
+          "breaches": 29,
+          "through": 2,
+          "manip": 9,
+          "talked_past": 0
+        },
+        "Bylaw, hand-written pack": {
+          "n": 45,
+          "right": 28,
+          "clean": 16,
+          "clean_to_person": 12,
+          "breaches": 29,
+          "through": 0,
+          "manip": 9,
+          "talked_past": 0
+        },
+        "mistral.mistral-large-3-675b-instruct alone": {
+          "n": 45,
+          "right": 19,
+          "clean": 16,
+          "clean_to_person": 0,
+          "breaches": 29,
+          "through": 1,
+          "manip": 9,
+          "talked_past": 0
+        },
+        "us.amazon.nova-lite-v1:0 alone": {
+          "n": 45,
+          "right": 22,
+          "clean": 16,
+          "clean_to_person": 0,
+          "breaches": 29,
+          "through": 6,
+          "manip": 9,
+          "talked_past": 2
+        },
+        "us.amazon.nova-pro-v1:0 alone": {
+          "n": 45,
+          "right": 23,
+          "clean": 16,
+          "clean_to_person": 0,
+          "breaches": 29,
+          "through": 1,
+          "manip": 9,
+          "talked_past": 0
+        }
+      }
+    },
+    {
+      "name": "All DeepSeek cases",
+      "systems": {
+        "Bylaw, compiled pack": {
+          "n": 152,
+          "right": 64,
+          "breaches": 84,
+          "through": 6,
+          "clean": 68,
+          "clean_to_person": 23,
+          "manip": 29,
+          "talked_past": 1
+        },
+        "Bylaw, compiled pack, Bedrock when unsure": {
+          "n": 152,
+          "right": 87,
+          "breaches": 84,
+          "through": 6,
+          "clean": 68,
+          "clean_to_person": 0,
+          "manip": 29,
+          "talked_past": 1
+        },
+        "Bylaw, hand-written pack": {
+          "n": 152,
+          "right": 91,
+          "breaches": 84,
+          "through": 0,
+          "clean": 68,
+          "clean_to_person": 51,
+          "manip": 29,
+          "talked_past": 0
+        },
+        "mistral.mistral-large-3-675b-instruct alone": {
+          "n": 152,
+          "right": 60,
+          "breaches": 84,
+          "through": 7,
+          "clean": 68,
+          "clean_to_person": 1,
+          "manip": 29,
+          "talked_past": 1
+        },
+        "us.amazon.nova-lite-v1:0 alone": {
+          "n": 152,
+          "right": 79,
+          "breaches": 84,
+          "through": 10,
+          "clean": 68,
+          "clean_to_person": 4,
+          "manip": 29,
+          "talked_past": 2
+        },
+        "us.amazon.nova-pro-v1:0 alone": {
+          "n": 152,
+          "right": 83,
+          "breaches": 84,
+          "through": 8,
+          "clean": 68,
+          "clean_to_person": 0,
+          "manip": 29,
+          "talked_past": 2
+        }
+      }
+    }
+  ]
+}

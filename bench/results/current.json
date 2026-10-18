@@ -1,0 +1,6 @@
+{
+  "runs": [
+    {"dir": "2026-10-17-c7i-handwritten-pack", "rename": {"bylaw": "bylaw:handwritten"}},
+    {"dir": "2026-10-17-c7i", "rename": {"bylaw": "bylaw:compiled", "bylaw+hybrid": "bylaw:compiled+hybrid"}}
+  ]
+}
