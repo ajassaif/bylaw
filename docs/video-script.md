@@ -32,17 +32,18 @@ starting state (the request buttons under the employee picker).
 
 ## The recorded cut (2026-10-19, release 43585a6 on c7i.4xlarge)
 
-`recordings/2026-10-19-aws/bylaw-demo-silent.mp4` (not in git; 1:53, 1440×900, captions burned in) was
+`recordings/2026-10-19-aws/bylaw-demo.mp4` (not in git; 1:53, 1440×900, captions burned in) was
 recorded with `scripts/record_demo.py` against the live AWS box: Nova Pro on Bedrock, the real Decider,
-the hand-written pack. Read this over it; each block fits its shot at a calm pace.
+the hand-written pack. The narration is Gemini 3.8 Flash TTS (voice "Fola") from Google AI Studio,
+one clip per shot, mixed in with ffmpeg. These are the lines spoken:
 
 | Time | On screen | Voice-over |
 |---|---|---|
 | 0:00–0:04 | Title | This is Bylaw. |
-| 0:04–0:20 | The policy, scrolling | Every company has a travel policy, written for people. Bylaw turns each clause into either a code check or a typed question for Strands Decider 2B, and shows you which, right in the margin. |
-| 0:20–0:40 | "Fly business to London" | Maya asks for business class. The cabin rule is arithmetic, so code checks it: breached, and the agent is sent back. It tries premium economy, but the booking is under fourteen days out, and whether the reason is real is a judgement. Decider gives it forty-five percent. Not sure enough, so a manager signs off. |
-| 0:40–0:57 | South Shore Lofts | Three hundred and forty-nine dollars a night, against a cap of one ninety. The model doesn't decide this. Code does, and the agent gets the reason back. |
-| 0:57–1:13 | Lamar House | Lamar House is eight percent over, which the policy allows with a reason. Maya gave one, but the agent left it out of the booking, so the gate sent it back. The gate checks what the agent actually sends. |
+| 0:04–0:20 | The policy, scrolling | Every company has a travel policy, written for people. Bylaw turns each clause into a code check, or a typed question for Strands Decider 2B, and shows which, right in the margin. |
+| 0:20–0:40 | "Fly business to London" | Maya asks for business class. Cabin rules are arithmetic, so code checks them, and sends the agent back. Her booking is also late, and whether the reason is real is a judgement. Decider says forty-five percent. Not sure enough, so a manager signs off. |
+| 0:40–0:57 | South Shore Lofts | South Shore Lofts: three hundred and forty-nine dollars a night, against a cap of one ninety. The model doesn't decide this. Code does, and the agent gets the reason back. |
+| 0:57–1:13 | Lamar House | Lamar House is eight percent over, which the policy allows with a reason. Maya gave one, but the agent left it out of the booking, so the gate sent it back. It checks what the agent actually sends. |
 | 1:13–1:30 | Team dinner | A team dinner with wine, a hundred and forty dollars. Over the per diem, caught in code. Decider isn't sure who was at the table, so it doesn't guess. |
-| 1:30–1:48 | Benchmark page | On a hundred and ninety-seven test cases, no breach got past Bylaw. Nova Pro reading the same policy let nine through, every one of them arithmetic. The cost is caution: Bylaw asks a person more often. And the page shows the results split by who wrote each label, including the ones I wrote. |
-| 1:48–1:53 | End card | The gate, the compiler and the benchmark are open source. Point it at your own policy. |
+| 1:30–1:48 | Benchmark page | On a hundred and ninety-seven test cases, no breach got past Bylaw. Nova Pro, reading the same policy, let nine through, every one of them arithmetic. The cost is caution: Bylaw asks a person more often. And the page splits the results by who wrote each label. |
+| 1:48–1:53 | End card | It's open source. Point it at your own policy. |
