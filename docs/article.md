@@ -1,6 +1,8 @@
 # A travel desk that checks the policy before it books
 
-*AWS Builder Center. Tags: #strands-decider-2b #policy*
+*AWS Agent Experience Hackathon: Strands Decider. Decision pattern: policy. Tags: #strands-decider-2b #policy*
+
+Demo (1:53, recorded on the live app on AWS): https://youtu.be/SmfgShc2p2c
 
 An AI travel agent that can book flights will, sooner or later, book business class because
 someone typed "my VP said it's fine". The policy that forbids it already exists. It's a PDF, it's
@@ -128,6 +130,15 @@ pack, and it isn't the family that compiled the pack or any baseline. I checked 
 hand, relabelled 55 and dropped 8 as ambiguous. Another 45 cases I wrote myself, 12 of them
 attempts to get around a rule: verbal approvals that were never recorded, a team dinner relabelled
 as client entertainment, an expense description that tells the reviewer to ignore the policy.
+
+## The reusable pattern
+
+The pattern is a compiled policy gate: a Strands `InterventionHandler` that, before a gated tool
+call runs, evaluates the pack's code checks, asks every applicable Decider question in one request,
+and maps the result onto `Proceed`, `Guide`, `Confirm` or `Deny` with a plain decision table. A
+question ships as JSON: typed (yes/no, choice or score), with named options, which options count as
+a breach, and the `lo`/`hi` band where a person decides. `docs/pattern.md` in the repo has a full
+question, the wiring in a dozen lines, and how to point it at your own policy and tools.
 
 ## What I'd tell someone trying this
 
