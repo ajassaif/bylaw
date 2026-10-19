@@ -181,3 +181,11 @@ def test_bench_serves_the_runs_named_in_current_json(paths):
     assert body["n_cases"] == 197
     assert set(body["systems"]) == {"bylaw", "llm:nova", "bylaw:handwritten"}
     assert body["split"] == {"groups": []}
+
+
+def test_model_reasoning_tags_never_reach_the_reader():
+    from bylaw.api.app import clean_reply
+    raw = "<thinking> I should offer cheaper hotels. </thinking> <response> South Shore is over the cap.\nTry Congress Avenue. </response>"
+    assert clean_reply(raw) == "South Shore is over the cap.\nTry Congress Avenue."
+    assert clean_reply("Booked.") == "Booked."
+    assert clean_reply("<thinking>only thoughts</thinking>") == ""

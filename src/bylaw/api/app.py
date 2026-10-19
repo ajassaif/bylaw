@@ -9,6 +9,7 @@ from __future__ import annotations
 import hmac
 import json
 import queue
+import re
 import threading
 import time
 import uuid
@@ -56,6 +57,15 @@ class _Live:
         self.events: queue.Queue = queue.Queue()  # replaced per turn; receipts go to the current one
         self.busy = threading.Lock()  # held by the agent thread for the whole turn
         self.agent: Any = None
+
+
+_THINKING = re.compile(r"<thinking>.*?(</thinking>|$)", re.S)
+_TAGS = re.compile(r"</?response>")
+
+
+def clean_reply(text: str) -> str:
+    """Some Bedrock models wrap replies in <thinking> and <response> tags; the reader sees neither."""
+    return _TAGS.sub("", _THINKING.sub("", text)).strip()
 
 
 def _bench(results: Path) -> dict:
@@ -143,7 +153,7 @@ def create_app(pack_path: Path, policy_path: Path, results_dir: Path, decider,
                     for it in interrupts:
                         events.put(("approval", {"interrupt_id": it.id, "prompt": str(it.reason)}))
                 else:
-                    events.put(("reply", {"text": text_of(result)}))
+                    events.put(("reply", {"text": clean_reply(text_of(result))}))
             except Exception as exc:  # surfaced to the UI; the server keeps running
                 events.put(("error", {"message": f"{type(exc).__name__}: {exc}"[:300]}))
             finally:
