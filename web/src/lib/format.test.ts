@@ -46,5 +46,8 @@ describe("systemName", () => {
     expect(systemName("bylaw:handwritten")).toBe("Bylaw, hand-written pack");
     expect(systemName("bylaw:compiled")).toBe("Bylaw, compiled pack");
     expect(systemName("bylaw:compiled+hybrid")).toBe("Bylaw, compiled pack, Bedrock when unsure");
+    expect(systemName("bylaw:handwritten+hybrid")).toBe("Bylaw, hand-written pack, Bedrock when unsure");
+    expect(systemName("bylaw:tuned")).toBe("Bylaw, hand-written pack, retuned");
+    expect(systemName("bylaw:tuned+hybrid")).toBe("Bylaw, retuned, Bedrock when unsure");
   });
 });

@@ -1,6 +1,7 @@
 {
   "runs": [
-    {"dir": "2026-10-17-c7i-handwritten-pack", "rename": {"bylaw": "bylaw:handwritten"}},
+    {"dir": "2026-10-19-c7i.4xlarge-handwritten-hybrid", "rename": {"bylaw": "bylaw:handwritten", "bylaw+hybrid": "bylaw:handwritten+hybrid"}},
+    {"dir": "2026-10-19-c7i.4xlarge-handwritten-tuned", "rename": {"bylaw": "bylaw:tuned", "bylaw+hybrid": "bylaw:tuned+hybrid"}},
     {"dir": "2026-10-17-c7i", "rename": {"bylaw": "bylaw:compiled", "bylaw+hybrid": "bylaw:compiled+hybrid"}}
   ]
 }

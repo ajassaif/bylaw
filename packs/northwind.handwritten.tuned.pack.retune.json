@@ -1,0 +1,119 @@
+{
+  "late_reason_real": {
+    "breaches": 3,
+    "clean": 3,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.2,
+      0.8
+    ],
+    "changed": false
+  },
+  "hotel_reason_genuine": {
+    "breaches": 4,
+    "clean": 1,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.2,
+      0.8
+    ],
+    "changed": false
+  },
+  "personal_nights": {
+    "breaches": 3,
+    "clean": 8,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.5,
+      0.55
+    ],
+    "changed": true
+  },
+  "alcohol_context": {
+    "breaches": 5,
+    "clean": 18,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.05,
+      0.5
+    ],
+    "changed": true
+  },
+  "has_external_attendee": {
+    "breaches": 0,
+    "clean": 0,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.2,
+      0.8
+    ],
+    "changed": false
+  },
+  "gift_is_cash": {
+    "breaches": 0,
+    "clean": 0,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.2,
+      0.8
+    ],
+    "changed": false
+  },
+  "split_cost": {
+    "breaches": 9,
+    "clean": 18,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.5,
+      0.5
+    ],
+    "changed": true
+  },
+  "dishonest_description": {
+    "breaches": 9,
+    "clean": 18,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.15,
+      0.95
+    ],
+    "changed": true
+  },
+  "personal_cost": {
+    "breaches": 6,
+    "clean": 18,
+    "before": [
+      0.2,
+      0.8
+    ],
+    "after": [
+      0.15,
+      0.5
+    ],
+    "changed": true
+  }
+}

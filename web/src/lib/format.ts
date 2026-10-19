@@ -38,6 +38,9 @@ export function systemName(system: string): string {
   if (system === "bylaw:handwritten") return "Bylaw, hand-written pack";
   if (system === "bylaw:compiled") return "Bylaw, compiled pack";
   if (system === "bylaw:compiled+hybrid") return "Bylaw, compiled pack, Bedrock when unsure";
+  if (system === "bylaw:handwritten+hybrid") return "Bylaw, hand-written pack, Bedrock when unsure";
+  if (system === "bylaw:tuned") return "Bylaw, hand-written pack, retuned";
+  if (system === "bylaw:tuned+hybrid") return "Bylaw, retuned, Bedrock when unsure";
   const id = system.replace(/^llm:/, "");
   for (const [re, name] of FAMILIES) {
     const m = id.match(re);

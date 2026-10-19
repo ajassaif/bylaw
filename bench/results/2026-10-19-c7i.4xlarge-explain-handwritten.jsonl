@@ -1,0 +1,197 @@
+{"case_id": "heldout-2-0-0", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-1", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-2", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "heldout-2-0-3", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-4", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-0-5", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-6", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.35209999999999997}]}
+{"case_id": "heldout-2-0-7", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-8", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-9", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-10", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-11", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-12", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-0-13", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "heldout-2-0-14", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-0-15", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-0-16", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-0-17", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.5623}]}
+{"case_id": "heldout-2-0-18", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.49639999999999995}]}
+{"case_id": "heldout-2-0-19", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-1-0", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4948}]}
+{"case_id": "heldout-2-1-1", "expected": "guide", "predicted": "guide", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.23929999999999996}, {"item": "personal_nights", "source": "decider", "p": 0.4075}]}
+{"case_id": "heldout-2-1-2", "expected": "confirm", "predicted": "confirm", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.5381}, {"item": "personal_nights", "source": "decider", "p": 0.5054}]}
+{"case_id": "heldout-2-1-3", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4686}]}
+{"case_id": "heldout-2-1-4", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.6448}]}
+{"case_id": "heldout-2-1-5", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5358}]}
+{"case_id": "heldout-2-1-6", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-1-7", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5614}]}
+{"case_id": "heldout-2-1-8", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.6472}]}
+{"case_id": "heldout-2-1-9", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4096}]}
+{"case_id": "heldout-2-1-10", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5376}]}
+{"case_id": "heldout-2-1-11", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4763}]}
+{"case_id": "heldout-2-1-12", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5353}]}
+{"case_id": "heldout-2-1-13", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4402}]}
+{"case_id": "heldout-2-1-14", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-1-15", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4526}]}
+{"case_id": "heldout-2-1-16", "expected": "guide", "predicted": "guide", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.47140000000000004}, {"item": "personal_nights", "source": "decider", "p": 0.513}]}
+{"case_id": "heldout-2-1-17", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-1-18", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4468}]}
+{"case_id": "heldout-2-1-19", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.545}]}
+{"case_id": "heldout-2-1-20", "expected": "guide", "predicted": "guide", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.42290000000000005}, {"item": "personal_nights", "source": "decider", "p": 0.4878}]}
+{"case_id": "heldout-2-2-1", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-2-2", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "has_external_attendee", "source": "decider", "p": 0.4377}, {"item": "split_cost", "source": "decider", "p": 0.2904}, {"item": "dishonest_description", "source": "decider", "p": 0.4114}]}
+{"case_id": "heldout-2-2-3", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.3068}, {"item": "dishonest_description", "source": "decider", "p": 0.307}]}
+{"case_id": "heldout-2-2-4", "expected": "guide", "predicted": "guide", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.4422}]}
+{"case_id": "heldout-2-2-5", "expected": "guide", "predicted": "deny", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.6034}, {"item": "split_cost", "source": "decider", "p": 0.2546}, {"item": "dishonest_description", "source": "decider", "p": 0.3676}]}
+{"case_id": "heldout-2-2-6", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.2639}]}
+{"case_id": "heldout-2-2-7", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "has_external_attendee", "source": "decider", "p": 0.391}, {"item": "split_cost", "source": "decider", "p": 0.4079}, {"item": "dishonest_description", "source": "decider", "p": 0.2931}]}
+{"case_id": "heldout-2-2-8", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.3949}]}
+{"case_id": "heldout-2-2-9", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2492}, {"item": "personal_cost", "source": "decider", "p": 0.4279}]}
+{"case_id": "heldout-2-2-10", "expected": "guide", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2095}, {"item": "has_external_attendee", "source": "decider", "p": 0.6528}, {"item": "split_cost", "source": "decider", "p": 0.2008}, {"item": "dishonest_description", "source": "decider", "p": 0.2928}]}
+{"case_id": "heldout-2-2-11", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.5181}, {"item": "dishonest_description", "source": "decider", "p": 0.2712}]}
+{"case_id": "heldout-2-2-12", "expected": "deny", "predicted": "deny", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2359}]}
+{"case_id": "heldout-2-2-13", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-2-14", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "has_external_attendee", "source": "decider", "p": 0.3147}, {"item": "split_cost", "source": "decider", "p": 0.3435}]}
+{"case_id": "heldout-2-2-15", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2398}, {"item": "split_cost", "source": "decider", "p": 0.5405}, {"item": "dishonest_description", "source": "decider", "p": 0.3819}, {"item": "personal_cost", "source": "decider", "p": 0.3309}]}
+{"case_id": "heldout-2-2-16", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.4816}]}
+{"case_id": "heldout-2-2-18", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "has_external_attendee", "source": "decider", "p": 0.2007}, {"item": "split_cost", "source": "decider", "p": 0.2477}, {"item": "dishonest_description", "source": "decider", "p": 0.3298}]}
+{"case_id": "heldout-2-2-19", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2617}, {"item": "dishonest_description", "source": "decider", "p": 0.2743}]}
+{"case_id": "heldout-2-2-20", "expected": "guide", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2021}, {"item": "has_external_attendee", "source": "decider", "p": 0.7264999999999999}, {"item": "split_cost", "source": "decider", "p": 0.2394}, {"item": "dishonest_description", "source": "decider", "p": 0.4958}]}
+{"case_id": "heldout-2-3-0", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2236}, {"item": "personal_cost", "source": "decider", "p": 0.2492}]}
+{"case_id": "heldout-2-3-1", "expected": "guide", "predicted": "guide", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.216}, {"item": "split_cost", "source": "decider", "p": 0.2095}, {"item": "dishonest_description", "source": "decider", "p": 0.3536}]}
+{"case_id": "heldout-2-3-2", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.4792}, {"item": "dishonest_description", "source": "decider", "p": 0.3508}]}
+{"case_id": "heldout-2-3-3", "expected": "deny", "predicted": "deny", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2144}, {"item": "dishonest_description", "source": "decider", "p": 0.2893}]}
+{"case_id": "heldout-2-3-4", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.3392}, {"item": "split_cost", "source": "decider", "p": 0.203}]}
+{"case_id": "heldout-2-3-5", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.4791}]}
+{"case_id": "heldout-2-3-6", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.5878}, {"item": "split_cost", "source": "decider", "p": 0.243}, {"item": "dishonest_description", "source": "decider", "p": 0.2791}, {"item": "personal_cost", "source": "decider", "p": 0.4275}]}
+{"case_id": "heldout-2-3-7", "expected": "deny", "predicted": "deny", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2259}]}
+{"case_id": "heldout-2-3-8", "expected": "guide", "predicted": "guide", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.3434}, {"item": "split_cost", "source": "decider", "p": 0.5778}, {"item": "dishonest_description", "source": "decider", "p": 0.2564}]}
+{"case_id": "heldout-2-3-9", "expected": "deny", "predicted": "deny", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2494}]}
+{"case_id": "heldout-2-3-10", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "has_external_attendee", "source": "decider", "p": 0.20709999999999995}, {"item": "split_cost", "source": "decider", "p": 0.3793}, {"item": "dishonest_description", "source": "decider", "p": 0.2925}]}
+{"case_id": "heldout-2-3-11", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.2518}]}
+{"case_id": "heldout-2-3-12", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.3008}]}
+{"case_id": "heldout-2-3-13", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.4318}, {"item": "dishonest_description", "source": "decider", "p": 0.2243}]}
+{"case_id": "heldout-2-3-15", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2451}, {"item": "dishonest_description", "source": "decider", "p": 0.2903}]}
+{"case_id": "heldout-2-3-16", "expected": "guide", "predicted": "guide", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.3686}]}
+{"case_id": "heldout-2-3-17", "expected": "deny", "predicted": "deny", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2425}, {"item": "dishonest_description", "source": "decider", "p": 0.3549}]}
+{"case_id": "heldout-2-3-18", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "has_external_attendee", "source": "decider", "p": 0.21940000000000004}]}
+{"case_id": "heldout-2-3-19", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.5151}]}
+{"case_id": "heldout-2-4-0", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-4-1", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "heldout-2-4-2", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.2897}]}
+{"case_id": "heldout-2-4-3", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-4-4", "expected": "guide", "predicted": "guide", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.6733}, {"item": "personal_nights", "source": "decider", "p": 0.6021}]}
+{"case_id": "heldout-2-4-5", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-4-6", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-4-7", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-4-8", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.2994}]}
+{"case_id": "heldout-2-4-9", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "heldout-2-4-10", "expected": "confirm", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.3436}]}
+{"case_id": "heldout-2-4-11", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "heldout-2-4-12", "expected": "confirm", "predicted": "confirm", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.24719999999999998}, {"item": "personal_nights", "source": "decider", "p": 0.4149}]}
+{"case_id": "heldout-2-4-13", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2175}, {"item": "has_external_attendee", "source": "decider", "p": 0.4112}, {"item": "split_cost", "source": "decider", "p": 0.2441}, {"item": "dishonest_description", "source": "decider", "p": 0.2412}]}
+{"case_id": "heldout-2-4-14", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-4-15", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-4-16", "expected": "confirm", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.3728}]}
+{"case_id": "heldout-2-4-18", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-4-19", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.3488}]}
+{"case_id": "heldout-2-4-20", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-5-0", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4584}]}
+{"case_id": "heldout-2-5-1", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-5-2", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "heldout-2-5-3", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2729}]}
+{"case_id": "heldout-2-5-4", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2256}, {"item": "split_cost", "source": "decider", "p": 0.2815}]}
+{"case_id": "heldout-2-5-5", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.3999}]}
+{"case_id": "heldout-2-5-6", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5656}]}
+{"case_id": "heldout-2-5-7", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-5-8", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-5-9", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.3874}]}
+{"case_id": "heldout-2-5-10", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4588}]}
+{"case_id": "heldout-2-5-11", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-5-12", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2991}, {"item": "dishonest_description", "source": "decider", "p": 0.2182}]}
+{"case_id": "heldout-2-5-13", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4534}]}
+{"case_id": "heldout-2-5-14", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2101}]}
+{"case_id": "heldout-2-5-15", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-5-16", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.279}]}
+{"case_id": "heldout-2-5-17", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5581}]}
+{"case_id": "heldout-2-5-18", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.2318}]}
+{"case_id": "heldout-2-5-19", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5153}]}
+{"case_id": "heldout-2-6-0", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-6-1", "expected": "guide", "predicted": "guide", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.3264}, {"item": "personal_nights", "source": "decider", "p": 0.412}]}
+{"case_id": "heldout-2-6-2", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-6-5", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2355}, {"item": "dishonest_description", "source": "decider", "p": 0.2149}]}
+{"case_id": "heldout-2-6-6", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.6697}]}
+{"case_id": "heldout-2-6-7", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2363}, {"item": "dishonest_description", "source": "decider", "p": 0.5422}]}
+{"case_id": "heldout-2-6-8", "expected": "guide", "predicted": "guide", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.5702}, {"item": "dishonest_description", "source": "decider", "p": 0.2057}, {"item": "personal_cost", "source": "decider", "p": 0.3136}]}
+{"case_id": "heldout-2-6-9", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-6-10", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-6-11", "expected": "guide", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2634}, {"item": "dishonest_description", "source": "decider", "p": 0.237}]}
+{"case_id": "heldout-2-6-12", "expected": "confirm", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4293}]}
+{"case_id": "heldout-2-6-13", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2405}]}
+{"case_id": "heldout-2-6-14", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-6-15", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2103}, {"item": "dishonest_description", "source": "decider", "p": 0.4964}]}
+{"case_id": "heldout-2-6-16", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.2732}]}
+{"case_id": "heldout-2-6-17", "expected": "deny", "predicted": "deny", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2008}, {"item": "dishonest_description", "source": "decider", "p": 0.3776}]}
+{"case_id": "heldout-2-6-18", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-6-19", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.3606}, {"item": "dishonest_description", "source": "decider", "p": 0.3106}]}
+{"case_id": "heldout-2-7-0", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-7-1", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "heldout-2-7-2", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4812}]}
+{"case_id": "heldout-2-7-3", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.2413}]}
+{"case_id": "heldout-2-7-4", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-7-5", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4941}]}
+{"case_id": "heldout-2-7-6", "expected": "guide", "predicted": "guide", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.207}]}
+{"case_id": "heldout-2-7-7", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "heldout-2-7-8", "expected": "confirm", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4784}]}
+{"case_id": "heldout-2-7-9", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-7-10", "expected": "guide", "predicted": "guide", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.4686}, {"item": "split_cost", "source": "decider", "p": 0.2898}, {"item": "dishonest_description", "source": "decider", "p": 0.4961}]}
+{"case_id": "heldout-2-7-11", "expected": "guide", "predicted": "guide", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.6676}]}
+{"case_id": "heldout-2-7-12", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.51}]}
+{"case_id": "heldout-2-7-13", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "heldout-2-7-14", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "split_cost", "source": "decider", "p": 0.4183}, {"item": "dishonest_description", "source": "decider", "p": 0.3097}]}
+{"case_id": "hw-01", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "hw-02", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-03", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-04", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "hw-05", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-06", "expected": "guide", "predicted": "confirm", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.6145}]}
+{"case_id": "hw-07", "expected": "guide", "predicted": "guide", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.281}]}
+{"case_id": "hw-08", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "hw-09", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "hw-10", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-11", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-12", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.41579999999999995}]}
+{"case_id": "hw-13", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4975}]}
+{"case_id": "hw-14", "expected": "confirm", "predicted": "confirm", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.3963}, {"item": "personal_nights", "source": "decider", "p": 0.4418}]}
+{"case_id": "hw-15", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.5264}]}
+{"case_id": "hw-16", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.7501}]}
+{"case_id": "hw-17", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.452}]}
+{"case_id": "hw-18", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.483}]}
+{"case_id": "hw-19", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4556}]}
+{"case_id": "hw-20", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-21", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.4492}]}
+{"case_id": "hw-22", "expected": "guide", "predicted": "guide", "unsure": [{"item": "personal_nights", "source": "decider", "p": 0.544}]}
+{"case_id": "hw-23", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.4187}]}
+{"case_id": "hw-24", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-25", "expected": "deny", "predicted": "guide", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.331}, {"item": "split_cost", "source": "decider", "p": 0.2399}, {"item": "dishonest_description", "source": "decider", "p": 0.2815}]}
+{"case_id": "hw-26", "expected": "deny", "predicted": "deny", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.2779}, {"item": "split_cost", "source": "decider", "p": 0.2562}, {"item": "dishonest_description", "source": "decider", "p": 0.27}]}
+{"case_id": "hw-27", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "has_external_attendee", "source": "decider", "p": 0.5403}, {"item": "split_cost", "source": "decider", "p": 0.2813}, {"item": "dishonest_description", "source": "decider", "p": 0.4002}]}
+{"case_id": "hw-28", "expected": "guide", "predicted": "guide", "unsure": []}
+{"case_id": "hw-29", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.3}]}
+{"case_id": "hw-30", "expected": "guide", "predicted": "guide", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2562}, {"item": "personal_cost", "source": "decider", "p": 0.2411}]}
+{"case_id": "hw-31", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "gift_is_cash", "source": "decider", "p": 0.4362}, {"item": "dishonest_description", "source": "decider", "p": 0.2849}]}
+{"case_id": "hw-32", "expected": "deny", "predicted": "deny", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2007}]}
+{"case_id": "hw-33", "expected": "deny", "predicted": "deny", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2858}]}
+{"case_id": "hw-34", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.3806}]}
+{"case_id": "hw-35", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2707}, {"item": "personal_cost", "source": "decider", "p": 0.454}]}
+{"case_id": "hw-36", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "personal_cost", "source": "decider", "p": 0.2911}]}
+{"case_id": "hw-37", "expected": "deny", "predicted": "confirm", "unsure": [{"item": "alcohol_context", "source": "decider", "p": 0.269}, {"item": "has_external_attendee", "source": "decider", "p": 0.6674}, {"item": "dishonest_description", "source": "decider", "p": 0.3394}]}
+{"case_id": "hw-38", "expected": "confirm", "predicted": "confirm", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.3447}]}
+{"case_id": "hw-39", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.6886}]}
+{"case_id": "hw-40", "expected": "confirm", "predicted": "confirm", "unsure": []}
+{"case_id": "hw-41", "expected": "proceed", "predicted": "proceed", "unsure": []}
+{"case_id": "hw-42", "expected": "guide", "predicted": "guide", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.3816}, {"item": "personal_cost", "source": "decider", "p": 0.2717}]}
+{"case_id": "hw-43", "expected": "guide", "predicted": "guide", "unsure": [{"item": "hotel_reason_genuine", "source": "decider", "p": 0.6880999999999999}, {"item": "personal_nights", "source": "decider", "p": 0.5122}]}
+{"case_id": "hw-44", "expected": "guide", "predicted": "guide", "unsure": [{"item": "late_reason_real", "source": "decider", "p": 0.3618}]}
+{"case_id": "hw-45", "expected": "proceed", "predicted": "confirm", "unsure": [{"item": "dishonest_description", "source": "decider", "p": 0.2399}, {"item": "personal_cost", "source": "decider", "p": 0.323}]}

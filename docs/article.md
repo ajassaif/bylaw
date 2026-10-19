@@ -1,154 +1,130 @@
-# A travel desk that checks the policy before it books
+# Bylaw: the policy check your AI agent can't argue with
 
 *AWS Agent Experience Hackathon: Strands Decider. Decision pattern: policy. Tags: #strands-decider-2b #policy*
 
 Demo (1:53, recorded on the live app on AWS): https://youtu.be/SmfgShc2p2c
+Code: https://github.com/ajassaif/bylaw
 
 An AI travel agent that can book flights will, sooner or later, book business class because
-someone typed "my VP said it's fine". The policy that forbids it already exists. It's a PDF, it's
+someone typed "my VP said it's fine". The policy that forbids it already exists. It's a document
 written for people, and the agent has no reliable way to be held to it.
 
-The obvious fix is a second model call: give an LLM the policy and the proposed booking and ask
-whether it's allowed. I tried that as a baseline. It works a lot of the time. It also costs a full
-model call on every booking, takes seconds, and answers in prose that the agent, or a persistent
-user, can argue with.
+The usual fix is a second model call: hand an LLM the policy and the proposed booking and ask
+whether it's allowed. I built that as a baseline and measured it. Amazon Nova Pro, given the whole
+policy, got 54% of verdicts right on 197 test cases and let 9 of 113 breaches through. Every one of
+those 9 was arithmetic: a trip that passed $3,000 without a recorded approval, or a flight booked
+inside the 14-day window with no reason. Language models are good at reading a policy and bad at
+adding up a trip.
 
-Bylaw takes a different route. It turns the policy into a gate the agent can't talk to: facts
-are checked in code, judgements are typed questions for Strands Decider 2B, and the verdict is an
-`if` statement over probabilities. On 197 test cases, the gate with a hand-written pack let none
-of the 113 breaches through. Nova Pro, reading the same policy, let 9 through, and every one of
-those was arithmetic: a trip total over $3,000, or a booking too close to departure.
+Bylaw splits the job three ways, cheapest first:
 
-## Facts go to code, judgements go to Decider
+1. **Code checks the facts.** Rates against caps, dates against windows, cabin against flight
+   length, trip totals against the approval limit. Exact, instant, and free.
+2. **Strands Decider 2B answers the judgement calls.** Is "the summit hotels are sold out" a real
+   reason? Was anyone from outside the company at that dinner? Decider returns a probability, not a
+   paragraph.
+3. **Amazon Bedrock is asked only when Decider is unsure.** A probability inside the question's
+   uncertain band goes to Nova Pro with the whole policy, instead of to a person.
 
-Strands Decider 2B is a 2-billion-parameter model with its text-generation head removed. You give
-it a state and a typed question (yes/no, one of N options, or a score on a scale) and it returns a
-probability for each answer in a single forward pass. It doesn't write anything. That makes it a
-good fit for one half of a policy and a bad fit for the other.
+On the same 197 cases that got **88.8% of verdicts right (95% CI 84.3–93.4%) and let none of the 113
+breaches through**, at about half Nova Pro's cost per decision.
+
+## Why Decider fits half a policy
+
+Strands Decider 2B is a 2-billion-parameter model with its text-generation head removed. You give it
+a state and a typed question (yes/no, one of N options, or a score) and it returns a probability for
+each answer in one forward pass. It doesn't write anything, which is exactly what you want from a
+gate: nothing for the agent to negotiate with.
 
 Take clause 3.2 of the (made-up) Northwind policy: you may go up to 10% over the hotel cap if
-nothing suitable is available, with your manager's approval. Two things are tangled together
-there. Whether $205 is within 10% of $190 is arithmetic. Whether "the summit hotels are sold out"
-is a real reason, rather than "I like the pool", is a judgement.
-
-Bylaw's compiler drafts that split. It reads the policy with Mistral Large 3 on Bedrock and
-sorts every clause. Arithmetic, dates, levels and categories become checks: short expressions like
-
-```
-ctx.facts.hotel.nightly_rate_usd > tables.hotel_cap[ctx.facts.hotel.city_tier]
-```
-
-that are parsed and evaluated against a whitelist, never run as Python. The rate comes from the
-hotel inventory, not from whatever number the agent typed. Judgements become typed questions with
-named options and a description of each side, which is the part Decider is good at.
-
-## Then it tests its own questions
-
-A typed question is a program, and wording is most of its behaviour. So the compiler doesn't
-stop at writing questions. It asks Mistral for practice cases per rule: compliant ones, clear
-breaches, borderline ones, and people trying to talk their way past the rule. It sends every
-wording of every question to Decider in one request per case (the state is encoded once and
-shared, so trying three wordings costs about the same as one), keeps the wording with the lowest
-Brier score, and sets two thresholds per question from the measured results: above `hi` the rule
-is breached, below `lo` it's clear, and in between a person decides. Questions that stay weak get
-rewritten, using the cases they got wrong.
-
-What comes out is a pack: one JSON file and a readable report saying how each clause is enforced
-and how each question did on practice cases, including the ones that didn't work. The report is
-written for the person who owns the policy, because, as the results below show, a compiled pack
-still needs one.
+nothing suitable is available, with your manager's approval. Whether $205 is within 10% of $190 is
+arithmetic, so it's code. Whether "the summit hotels are sold out" is a real reason, rather than "I
+like the pool", is a judgement, so it's a Decider question with named options and a description of
+each side.
 
 ## The gate
 
-At run time the pack loads into a Strands `InterventionHandler`. Before any booking or expense
-tool runs, it renders one state (who's asking, what's booked, the conversation, the proposed
-call), runs the checks, asks every relevant Decider question in a single request, and maps the
-result onto Strands' own actions:
+A policy becomes a pack: one JSON file of rules, code checks and typed questions. At run time the
+pack loads into a Strands `InterventionHandler`. Before any booking or expense tool runs, it renders
+one state (who's asking, what's booked, the conversation, the proposed call), runs the checks, asks
+every relevant Decider question in a single request, and maps the result onto Strands' own actions:
 
-- `Proceed` when everything is clear at high confidence,
+- `Proceed` when everything is clear,
 - `Guide` with the clause's remedy when the agent can fix it (pick a cheaper hotel),
 - `Confirm` when a person has to sign off, which pauses the agent until they do,
 - `Deny` when the policy forbids it.
 
-The agent never sees a paragraph it can push back on. It sees a cancelled call and a reason, and
-the decision itself was an `if` statement over probabilities.
+The decision is a plain table over those results, an `if` statement over probabilities. A few rules
+turned out to matter. A breach the agent can fix outranks a sign-off, so nobody approves a booking
+that's about to change. The same rule sent back twice becomes a refusal. If Decider is down, the
+code checks still decide what they can and a person signs off the rest; the gate never fails open.
+Check expressions are parsed against a whitelist, never run as Python, and they read facts from the
+inventory rather than numbers the agent typed.
 
-A few small rules turned out to matter. A breach the agent can fix outranks a sign-off, so nobody
-is asked to approve a booking that's about to change. The same rule sent back twice becomes a
-refusal, so a stubborn model gets refusals instead of more chances. If the Decider server is down, the gate asks a person; it
-never fails open.
+## Writing the pack: a compiler, and an honest first draft
+
+Writing questions by hand doesn't scale, so Bylaw has a compiler. It reads the policy with Mistral
+Large 3 on Bedrock and sorts every clause into checks and questions. Then it tests its own questions:
+it writes practice cases per rule, sends every wording of every question to Decider in one request
+per case, keeps the best-calibrated wording and sets each question's thresholds from what it
+measured. Questions that stay weak get rewritten.
+
+It isn't as good as a careful person yet. The compiled pack is right on 44.7% of cases. Two mistakes
+explain most of the gap, and both are visible in the report it writes: it marked two fixable rules as
+*refuse*, and it pulled the $3,000 trip check for flights after that check failed its practice cases.
+Treat a compiled pack like generated code: read the report, fix what it flags, ship it.
 
 ## How it did
 
-I tested two packs against Bedrock models given the whole policy and the same state. One pack is
-the compiler's output, untouched. The other I wrote by hand, before the compiler had produced a
-pack, using the same format and the same gate. All five systems saw the same 197 cases.
+197 test cases, 50 of them attempts to talk the agent past a rule: verbal approvals that were never
+recorded, a team dinner relabelled as client entertainment, an expense description that tells the
+reviewer to ignore the policy. Every system saw the same rendered state.
 
-| | Let a breach through | Talked into a breach | Right verdict (95% CI) | Clean cases sent to a person |
-|---|---|---|---|---|
-| Bylaw, hand-written pack | **0 of 113** | **0 of 38** | 60.4% (53.8–67.0%) | 63 of 84 |
-| Bylaw, compiled pack | 8 of 113 | 1 of 38 | 44.7% (37.6–51.8%) | 27 of 84 |
-| Amazon Nova Pro alone | 9 of 113 | 2 of 38 | 53.8% (46.7–60.9%) | 0 of 84 |
-| Amazon Nova Lite alone | 16 of 113 | 4 of 38 | 51.3% (44.7–58.4%) | 4 of 84 |
-| Mistral Large 3 alone | 8 of 113 | 1 of 38 | 40.1% (33.0–47.2%) | 1 of 84 |
+| | Right verdict (95% CI) | Breaches let through | Talked into a breach | Clean trips sent to a person | $ per 1,000 |
+|---|---|---|---|---|---|
+| Bylaw: code + Decider + Bedrock when unsure | **88.8% (84.3–93.4%)** | **0 of 113** | **0 of 38** | 0 of 84 | $0.83 |
+| Bylaw: code + Decider, a person when unsure | 60.4% (53.8–67.0%) | 0 of 113 | 0 of 38 | 63 of 84 | $0.26 |
+| Amazon Nova Pro alone | 53.8% (46.7–60.9%) | 9 of 113 | 2 of 38 | 0 of 84 | $1.52 |
+| Amazon Nova Lite alone | 51.3% (44.7–58.4%) | 16 of 113 | 4 of 38 | 4 of 84 | $0.11 |
+| Mistral Large 3 alone | 40.1% (33.0–47.2%) | 8 of 113 | 1 of 38 | 1 of 84 | $0.99 |
+| Compiled pack, Bedrock when unsure | 58.4% (51.8–65.5%) | 8 of 113 | 1 of 38 | 0 of 84 | $0.66 |
 
-"Talked into a breach" counts the manipulation cases that should have been stopped and went ahead.
+Decider settled 62% of cases on its own and passed 75 to Nova Pro. Without Bedrock the gate is just
+as safe but cautious: it asked a person about 63 of 84 clean trips. I traced every one of those to a
+Decider answer inside the uncertain band, never to a code check, and mostly to three questions
+(dishonest descriptions, split claims, personal nights). Retuning the bands on the compiler's
+practice cases, with the test cases kept out, took that from 63 to 46 and accuracy from 60% to 66%.
+Bedrock-when-unsure did far more.
 
-The result I'd build on is the first column. Nothing got past the hand-written pack. All 9 of Nova
-Pro's misses were arithmetic or a missing field, the half of the policy Bylaw does in code. Language
-models are good at reading a policy and bad at adding up a trip.
+**One thing to know before you trust the pooled numbers.** I wrote the hand-written pack, 45 of the
+cases and every label correction. DeepSeek V3.2 wrote the other 152 from the policy text alone; I
+corrected 55 of its labels, mostly the same arithmetic misses the baselines make. Corrections still
+favour the pack, so the repo splits every result by where the label came from. On the 97 DeepSeek
+cases nobody touched, Bylaw with Bedrock when unsure gets **90% right against Nova Pro's 77%**, and
+neither lets a breach through there.
 
-The cost is the last column, and it's large. The pack sent 63 of the 84 clean bookings to a person.
-A Decider answer between `lo` and `hi` goes to a person by design, and with untuned default
-thresholds a lot of answers land there. A manager would be signing off three of every four routine
-trips. That's the dial the compiler's tuning is meant to turn.
-
-One more thing to know before trusting the pooled accuracy: I wrote the hand-written pack, 45 of the
-cases and every label correction, and I changed the gate's severity order after looking at three of
-my own cases. DeepSeek wrote the other 152 from the policy alone; I corrected 55 of its labels, most
-of them the same arithmetic misses. On the 97 DeepSeek cases I didn't touch, Nova Pro gets more
-verdicts exactly right than the hand-written pack (77% against 43%), and also lets no breach
-through. The repo has the full split, and the script that makes it.
-
-The compiled pack doesn't reach the hand-written one yet. It is right on 44.7% of cases, below Nova
-Pro alone. Two compiler mistakes explain most of the gap, and both are visible in its report: it
-marked two fixable rules as *refuse*, so 30 breaches the agent could have fixed were refused
-outright, and it pulled the $3,000 trip check for flights after that check failed its practice
-cases, which is where 7 of its 8 missed breaches come from. Sending its unsure answers to Nova Pro
-lifts it to 58.4%, which ties Nova Pro alone.
-
-So the honest summary: the gate works, and the compiler is a fast first draft that a person still
-has to correct. The report it writes points at exactly what to correct.
-
-Speed and cost: these runs were on a CPU instance, where the Decider took about 2 seconds per
-request and Bedrock answered in under one. This account had no GPU quota during the hackathon, so I
-have no GPU number and I'm not claiming one. Bylaw's cost per 1,000 decisions ($0.30 against Nova
-Pro's $1.52) spreads the instance's hourly price over decision time, as if it were busy all the time.
-
-The test cases were mostly written by DeepSeek V3.2 from the policy text alone. It never saw either
-pack, and it isn't the family that compiled the pack or any baseline. I checked every label by
-hand, relabelled 55 and dropped 8 as ambiguous. Another 45 cases I wrote myself, 12 of them
-attempts to get around a rule: verbal approvals that were never recorded, a team dinner relabelled
-as client entertainment, an expense description that tells the reviewer to ignore the policy.
+**Speed.** This account had no GPU quota during the hackathon, so Decider ran on a CPU instance
+(c7i.4xlarge) at 1–2 s per request, slower than Bedrock. I have no GPU number and I'm not claiming
+one. The cost figure spreads the instance's hourly price over decision time as if it were always
+busy, plus Bedrock tokens for the calls it passed on.
 
 ## The reusable pattern
 
-The pattern is a compiled policy gate: a Strands `InterventionHandler` that, before a gated tool
-call runs, evaluates the pack's code checks, asks every applicable Decider question in one request,
-and maps the result onto `Proceed`, `Guide`, `Confirm` or `Deny` with a plain decision table. A
-question ships as JSON: typed (yes/no, choice or score), with named options, which options count as
-a breach, and the `lo`/`hi` band where a person decides. `docs/pattern.md` in the repo has a full
-question, the wiring in a dozen lines, and how to point it at your own policy and tools.
+A compiled policy gate: a Strands `InterventionHandler` that, before a gated tool call runs,
+evaluates the pack's code checks, asks every applicable Decider question in one request, maps the
+result onto `Proceed`, `Guide`, `Confirm` or `Deny` with a plain decision table, and escalates only
+the unsure remainder. A question ships as JSON: typed (yes/no, choice or score), with named options,
+which options count as a breach, and the `lo`/`hi` band where it's unsure. `docs/pattern.md` has a
+full question, the wiring in a dozen lines, and how to point it at your own policy and tools.
 
 ## What I'd tell someone trying this
 
-- Keep each question to one judgement. Decider is strong on short, single decisions and weaker
-  when a question hides two.
-- Never let the classifier do arithmetic you can do in code.
-- Read the calibration, not just the accuracy. A probability you can threshold is the reason to
-  use a decision model at all.
-- The practice cases are the weakest link. A model writes them, and the pack learns from them.
-  Score on cases from somewhere else.
-- Treat a compiled pack like generated code: read the report, fix what it flags, then ship it.
+- Never let a language model do arithmetic you can do in code. That's where the LLM judges failed.
+- Keep each Decider question to one judgement. It's strong on short, single decisions.
+- Use the probability. A calibrated "unsure" is the reason to use a decision model at all: it tells
+  you which 38% of calls deserve a bigger model.
+- Model-written test cases need a human pass, and the human pass needs disclosing. Split your results
+  by who wrote the label.
 
-The compiler, the gate, the benchmark and every result file are in the repo: https://github.com/ajassaif/bylaw.
+The compiler, the gate, the benchmark, every result file and the script that splits them are in the
+repo: https://github.com/ajassaif/bylaw.

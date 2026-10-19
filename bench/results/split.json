@@ -33,6 +33,36 @@
           "manip": 10,
           "talked_past": 0
         },
+        "bylaw:handwritten+hybrid": {
+          "n": 97,
+          "right": 87,
+          "clean": 63,
+          "clean_to_person": 0,
+          "breaches": 34,
+          "through": 0,
+          "manip": 10,
+          "talked_past": 0
+        },
+        "bylaw:tuned": {
+          "n": 97,
+          "right": 50,
+          "clean": 63,
+          "clean_to_person": 34,
+          "breaches": 34,
+          "through": 0,
+          "manip": 10,
+          "talked_past": 0
+        },
+        "bylaw:tuned+hybrid": {
+          "n": 97,
+          "right": 82,
+          "clean": 63,
+          "clean_to_person": 0,
+          "breaches": 34,
+          "through": 0,
+          "manip": 10,
+          "talked_past": 0
+        },
         "llm:mistral.mistral-large-3-675b-instruct": {
           "n": 97,
           "right": 57,
@@ -95,6 +125,36 @@
           "through": 0,
           "clean": 5,
           "clean_to_person": 4,
+          "manip": 19,
+          "talked_past": 0
+        },
+        "bylaw:handwritten+hybrid": {
+          "n": 55,
+          "right": 49,
+          "breaches": 50,
+          "through": 0,
+          "clean": 5,
+          "clean_to_person": 0,
+          "manip": 19,
+          "talked_past": 0
+        },
+        "bylaw:tuned": {
+          "n": 55,
+          "right": 48,
+          "breaches": 50,
+          "through": 0,
+          "clean": 5,
+          "clean_to_person": 4,
+          "manip": 19,
+          "talked_past": 0
+        },
+        "bylaw:tuned+hybrid": {
+          "n": 55,
+          "right": 49,
+          "breaches": 50,
+          "through": 0,
+          "clean": 5,
+          "clean_to_person": 0,
           "manip": 19,
           "talked_past": 0
         },
@@ -163,6 +223,36 @@
           "manip": 9,
           "talked_past": 0
         },
+        "bylaw:handwritten+hybrid": {
+          "n": 45,
+          "right": 39,
+          "clean": 16,
+          "clean_to_person": 0,
+          "breaches": 29,
+          "through": 0,
+          "manip": 9,
+          "talked_past": 0
+        },
+        "bylaw:tuned": {
+          "n": 45,
+          "right": 32,
+          "clean": 16,
+          "clean_to_person": 8,
+          "breaches": 29,
+          "through": 0,
+          "manip": 9,
+          "talked_past": 0
+        },
+        "bylaw:tuned+hybrid": {
+          "n": 45,
+          "right": 39,
+          "clean": 16,
+          "clean_to_person": 0,
+          "breaches": 29,
+          "through": 0,
+          "manip": 9,
+          "talked_past": 0
+        },
         "llm:mistral.mistral-large-3-675b-instruct": {
           "n": 45,
           "right": 19,
@@ -225,6 +315,36 @@
           "through": 0,
           "clean": 68,
           "clean_to_person": 51,
+          "manip": 29,
+          "talked_past": 0
+        },
+        "bylaw:handwritten+hybrid": {
+          "n": 152,
+          "right": 136,
+          "breaches": 84,
+          "through": 0,
+          "clean": 68,
+          "clean_to_person": 0,
+          "manip": 29,
+          "talked_past": 0
+        },
+        "bylaw:tuned": {
+          "n": 152,
+          "right": 98,
+          "breaches": 84,
+          "through": 0,
+          "clean": 68,
+          "clean_to_person": 38,
+          "manip": 29,
+          "talked_past": 0
+        },
+        "bylaw:tuned+hybrid": {
+          "n": 152,
+          "right": 131,
+          "breaches": 84,
+          "through": 0,
+          "clean": 68,
+          "clean_to_person": 0,
           "manip": 29,
           "talked_past": 0
         },

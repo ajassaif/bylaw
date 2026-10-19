@@ -116,8 +116,9 @@ function Split({ groups }: { groups: { name: string; systems: Record<string, Spl
       <p className="lede">
         DeepSeek wrote 152 cases from the policy alone. On review I kept 97 of its labels and corrected 55, most of them breaches it
         had missed: a trip passing $3,000 with no recorded approval, a booking inside 14 days with no reason. I wrote the other 45.
-        On the 97 untouched cases the Bedrock models get more verdicts exactly right; across every group, the hand-written pack lets
-        no breach through.
+        On the 97 untouched cases, the hand-written pack alone gets fewer verdicts exactly right than Nova Pro, because it asks a person
+        whenever Decider is unsure. With Bedrock deciding only those unsure calls it gets more right than any model alone, and in every
+        group no breach gets through.
       </p>
       {groups.map((g) => {
         const rows = Object.entries(g.systems);
@@ -172,7 +173,7 @@ export function Bench() {
     <main className="bench">
       <h1>{data.n_cases} test cases, decided by Bylaw{hasLlms ? " and by Bedrock models reading the policy" : ""}</h1>
       <p className="lede">
-        Every system saw the same rendered state for each case, and none of it was used to tune the compiled pack. One person wrote the
+        Every system saw the same rendered state for each case, and none of it was used to tune any pack: the retuned pack's thresholds came from the compiler's practice cases. One person wrote the
         hand-written pack, 45 of the cases and every label correction, so read the split below before the pooled numbers. A model
         that never produced a usable answer is counted as wrong.
         {!hasLlms && " This run has no Bedrock rows: it was scored without language models."}

@@ -29,6 +29,8 @@ def origin(case: dict) -> str:
 
 PRETTY = {"bylaw:handwritten": "Bylaw, hand-written pack", "bylaw:compiled": "Bylaw, compiled pack",
           "bylaw:compiled+hybrid": "Bylaw, compiled pack, Bedrock when unsure",
+          "bylaw:handwritten+hybrid": "Bylaw, hand-written pack, Bedrock when unsure",
+          "bylaw:tuned": "Bylaw, hand-written pack, retuned", "bylaw:tuned+hybrid": "Bylaw, retuned, Bedrock when unsure",
           "llm:us.amazon.nova-pro-v1:0": "Amazon Nova Pro alone", "llm:us.amazon.nova-lite-v1:0": "Amazon Nova Lite alone",
           "llm:mistral.mistral-large-3-675b-instruct": "Mistral Large 3 alone"}
 
@@ -36,7 +38,7 @@ PRETTY = {"bylaw:handwritten": "Bylaw, hand-written pack", "bylaw:compiled": "By
 def system_name(run: Path, system: str) -> str:
     """The key the bench page uses (see bench/results/current.json)."""
     if system.startswith("bylaw"):
-        pack = "handwritten" if "handwritten" in run.name else "compiled"
+        pack = "tuned" if "tuned" in run.name else "handwritten" if "handwritten" in run.name else "compiled"
         return f"bylaw:{pack}" + ("+hybrid" if system == "bylaw+hybrid" else "")
     return system
 
