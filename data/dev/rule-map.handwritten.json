@@ -1,0 +1,17 @@
+{
+  "book_early_flights": ["advance_booking"],
+  "cabin_class_by_duration": ["cabin_class"],
+  "hotel_nightly_caps": ["hotel_over_limit"],
+  "hotel_over_cap_approval": ["hotel_needs_reason", "hotel_needs_manager"],
+  "hotel_nights_work_only": ["hotel_nights"],
+  "meals_per_diem": ["per_diem"],
+  "alcohol_not_reimbursed": ["alcohol"],
+  "client_entertainment_attendees": ["attendees_listed"],
+  "gifts_limit": ["gift_limit"],
+  "receipts_required": ["receipts"],
+  "one_expense_one_claim": ["split_claims"],
+  "honest_description": ["honest_description"],
+  "personal_costs_not_reimbursed": ["personal_costs"],
+  "big_trips_approval": ["trip_approval"],
+  "recorded_approval_only": ["trip_approval"]
+}

@@ -1,4 +1,4 @@
-"""Command line: bylaw compile | make-heldout | bench | serve."""
+"""Command line: bylaw compile | retune | make-heldout | bench | serve."""
 
 from __future__ import annotations
 
@@ -43,6 +43,31 @@ def compile(
         save_cases(cases, dev_out)
     typer.echo(f"wrote {out} (pack {pack_hash(pack)}): {len(pack.rules)} rules, {len(pack.checks)} checks, "
                f"{len(pack.questions)} questions, {len(cases)} dev cases")
+
+
+@app.command()
+def retune(
+    pack: Path = typer.Option(..., exists=True, help="Pack whose thresholds to set."),
+    cases: Path = typer.Option(..., exists=True, help="Practice cases (never the test cases)."),
+    rule_map: Path = typer.Option(None, help='JSON {case rule id: [pack rule ids]} when the cases were written for another pack.'),
+    out: Path = typer.Option(...),
+    decider_url: str = typer.Option(config.DECIDER_URL),
+) -> None:
+    """Set each question's lo/hi band from practice cases. Wording and the decision table are unchanged."""
+    import json
+
+    from bylaw.cases import load_cases
+    from bylaw.compiler.retune import retune as do_retune
+    from bylaw.decider import DeciderClient
+    from bylaw.pack import load_pack, pack_hash, save_pack
+
+    mapping = json.loads(rule_map.read_text(encoding="utf-8")) if rule_map else {}
+    tuned, report = do_retune(load_pack(pack), load_cases(cases), DeciderClient(decider_url, timeout=120), mapping)
+    save_pack(tuned, out)
+    out.with_suffix(".retune.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    for qid, r in report.items():
+        typer.echo(f"{qid}: {r['breaches']} breaches, {r['clean']} clean, {r['before']} -> {r['after']}")
+    typer.echo(f"wrote {out} (pack {pack_hash(tuned)})")
 
 
 @app.command("make-heldout")
